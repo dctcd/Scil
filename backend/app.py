@@ -1,9 +1,14 @@
+import json
 import os
 import subprocess
 from enum import Enum
 
 from dotenv import load_dotenv
 from re import findall
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS, cross_origin
+from flask_socketio import SocketIO
 from pydantic import BaseModel, Field
 from openai import OpenAI
 
@@ -32,7 +37,7 @@ class Issue(BaseModel):
 class CodeAnalysis(BaseModel):
     issues: list[Issue] = Field(description="A list of issues found in the code")
 
-def analyse(client, prompt, code, response_format):
+def analyse_code(client, prompt, code, response_format):
     completion = client.beta.chat.completions.parse(
         model="gpt-4o",
         store=True,
@@ -45,7 +50,7 @@ def analyse(client, prompt, code, response_format):
     return completion.choices[0].message.content
 
 def analyse_single_file(client, code):
-    analyse(client, SINGLE_FILE_PROMPT, code, CodeAnalysis)
+    return analyse_code(client, SINGLE_FILE_PROMPT, code, CodeAnalysis)
 
 class PackException(Exception):
     pass
@@ -82,11 +87,36 @@ def analyse_multiple_files(client, path):
     class CodebaseAnalysis(BaseModel):
         files: list[FileAnalysis]
 
-    print(analyse(client, CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis))
+    return analyse_code(client, CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis), directory_structure
 
 
 if __name__ == "__main__":
     load_dotenv(".env")
     openai_client = OpenAI()
     # analyse_single_file(client, "INSERT_CODE_HERE")
-    analyse_multiple_files(openai_client, "/Users/Darragh/Scil/")
+    # analyse_multiple_files(openai_client, "/Users/Darragh/Scil/")
+
+    app = Flask(__name__)
+    socketio = SocketIO(app, cors_allowed_origins="*")
+
+    # Enable Cross Origin to prevent errors regarding frontend origins
+    CORS(app)
+
+    @app.route('/analyse', methods=['POST'])
+    @cross_origin()
+    def analyse():
+        data = request.json
+        code = data.get('code')
+        try:
+            json_string = analyse_single_file(openai_client, code)
+            parsed_json = json.loads(json_string)
+        except json.JSONDecodeError as e:
+            print(e)
+            return {"error": "Invalid JSON"}, 400
+        except Exception as e:
+            return {"error": "Internal Server Error"}, 500
+
+        return parsed_json, 200
+
+    app.run(port=5000)
+
