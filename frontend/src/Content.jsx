@@ -29,7 +29,7 @@ const instance = axios.create({
     rejectUnauthorized: false,
 });
 
-const Content = ({inputErrors, headline, description}) => {
+const Content = ({inputErrors, title, headline, description}) => {
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [token, setToken] = useState("");
@@ -110,7 +110,7 @@ const Content = ({inputErrors, headline, description}) => {
         setMessage(message);
     };
 
-    const code =
+    const codeQualityIssue =
         <Box variant="body1" p="5px" color="#FFFFFF" bgcolor="#000000"
                  sx={{borderRadius: "10px", marginBottom:"10px", display: "flex"}}>
             <Box sx={{display: "flex", flexDirection: "row", alignItems: "center"}}>
@@ -119,7 +119,7 @@ const Content = ({inputErrors, headline, description}) => {
             </Box>
         </Box>;
 
-    const moderate =
+    const moderateIssue =
         <Box variant="body1" p="5px" color="#000000" bgcolor="#FFDD85"
                 sx={{borderRadius: "10px", marginBottom:"10px", display: "flex"}}>
             <Box sx={{display: "flex", flexDirection: "row", alignItems: "center", flexGrow:1, width:"100%"}}>
@@ -128,7 +128,7 @@ const Content = ({inputErrors, headline, description}) => {
             </Box>
         </Box>;
 
-    const major =
+    const majorIssue =
         <Box variant="body1" p="5px" color="#FFFFFF" bgcolor="#F18787"
                  sx={{borderRadius: "10px", marginBottom:"10px", display: "flex"}}>
             <Box sx={{display: "flex", flexDirection: "row", alignItems: "center"}}>
@@ -137,7 +137,7 @@ const Content = ({inputErrors, headline, description}) => {
             </Box>
         </Box>;
 
-    const [errors, setErrors] = useState(inputErrors);
+    // const [errors, setErrors] = useState(inputErrors);
 
     const theme = useTheme();
 
@@ -191,13 +191,13 @@ const Content = ({inputErrors, headline, description}) => {
             </Box>
             <Box sx={{borderRadius: 4, flexGrow: 1, flexDirection: "column", overflowX: "scroll", /*width: "900px",*/ overflow: "hidden"}}>
             <Stack direction="row" sx={{overflowX: "auto"}}> {/* Copilot generated - BEGIN*/}
-    {errors.map((error, index) => (
+    {(inputErrors).map((error, index) => (
         <Button key={index + "button"} fullWidth sx={{ borderRadius: "20px" }} style={{ background: "#FFF8E6", display: "flex", flexDirection: "row", textTransform: "none", color: "black", marginRight: "10px", alignItems: "flex-start", width: "150px", flexShrink: 0 }}>
             <Box key={index + "box"} sx={{  flexDirection: "row", alignItems: "stretch", width: "100%", marginTop: "5px" }}>
-                {error[0] === 0 ? code : (error[0] === 1 ? moderate : major)}
-                <Typography sx={{lineHeight: "16px", marginBottom: "10px"}} key={index + "title"}>{error[1]}</Typography>
-                <Typography sx={{lineHeight: "14px", marginBottom: "5px", fontSize: "12px"}} key={index + "description"}>{error[2]}</Typography>
-                <Typography sx={{lineHeight: "14px", marginBottom: "5px", fontSize: "12px"}} key={index + "errors"}>{error[3]}</Typography>
+                {error.type === "codeQualityIssue" ? codeQualityIssue : (error.type === "moderateIssue" ? moderateIssue : majorIssue)}
+                <Typography sx={{lineHeight: "16px", marginBottom: "10px"}} key={index + "title"}>{error.title}</Typography>
+                <Typography sx={{lineHeight: "14px", marginBottom: "5px", fontSize: "12px"}} key={index + "description"}>{error.description}</Typography>
+                <Typography sx={{lineHeight: "14px", marginBottom: "5px", fontSize: "12px"}} key={index + "errors"}>{error.lineNumbers}</Typography>
             </Box>
         </Button>
     ))}

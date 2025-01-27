@@ -7,19 +7,19 @@ const Home = ({project}) => {
     return (
         <Stack direction="row">
             <Stack flexGrow={1} flexDirection="column">
-                <Content inputErrors={[
-                    [0, "ProjectContext", project],
-                    [0, "Indentation", "Indent lines 1-9"],
-                    [1, "Syntax Error", "Missing closing brace on line 4"],
-                    [2, "Variable Name", "Undefined variable on line 6"],
-                    [1, "Unused Import", "Remove unused import on line 2"],
-                    [2, "Logic Error", "Incorrect condition on line 7"],
-                    [0, "Redundant Code", "Remove duplicate code on lines 8-9"],
-                    [1, "Data Type", "Use integer instead of string on line 5"],
-                    [0, "Spacing", "Add space after ',' on line 3"],
-                    [2, "Null Check", "Add null check on line 10"],
-                    [1, "Type Error", "Mismatched types in comparison on line 11"]
-                ]} headline={"Everything looks good"} description={"No flaws to report"}/>
+                <Content inputErrors={ project.issues
+                    // [0, "Title", project.codeTitle],
+                    // [0, "Indentation", "Indent lines 1-9"],
+                    // [1, "Syntax Error", "Missing closing brace on line 4"],
+                    // [2, "Variable Name", "Undefined variable on line 6"],
+                    // [1, "Unused Import", "Remove unused import on line 2"],
+                    // [2, "Logic Error", "Incorrect condition on line 7"],
+                    // [0, "Redundant Code", "Remove duplicate code on lines 8-9"],
+                    // [1, "Data Type", "Use integer instead of string on line 5"],
+                    // [0, "Spacing", "Add space after ',' on line 3"],
+                    // [2, "Null Check", "Add null check on line 10"],
+                    // [1, "Type Error", "Mismatched types in comparison on line 11"]
+                } title={project.codeTitle} headline={project.issuesSummaryTitle} description={project.issuesSummary}/>
                 <Hidden mdUp implementation="css">
                     <Commits style={{float: "right"}} commitsInput={[
                         ["Fixed login bug", "Alice", "5 minutes ago", "1 major issue, 2 code quality issues"],

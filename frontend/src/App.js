@@ -3,22 +3,33 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Home from "./Home";
 import Project from "./Project";
+
 import React, {useEffect, createContext} from "react";
+import axios from "axios";
 
 export const SidebarContext = createContext(false);
 export const TabContext = createContext("Home");
 export const ProjectContext = createContext({});
 
+
+
 function App() {
     const theme = useTheme();
     const [sidebarOpen, setSidebarOpen] = React.useState(window.innerWidth >= theme.breakpoints.values.md);
     const [tab, setTab] = React.useState("Home");
-    const [project, setProject] = React.useState("");
+    // TEMP - BEGIN
+        var projectDefault = JSON.parse("{\"codeTitle\" : \"Title\", \"issuesSummaryTitle\" : \"Issues Title\", \"issuesSummary\" : \"Issues Summary\", \"issues\" : [{\"title\" : \"title\", \"description\" : \"description\", \"type\" : \"codeQualityIssue\", \"severity\" : 0.3, \"lineNumbers\" : [1]}]}");
+
+    // TEMP - END
+
+    const [project, setProject] = React.useState(projectDefault);
     const [sidebarStyle, setSidebarStyle] = React.useState(window.innerWidth >= theme.breakpoints.values.md ? "persistent" : "temporary");
     const container = undefined;
     const handleDrawerToggle = () => {
         setSidebarOpen(!sidebarOpen);
     };
+
+
 
     const handleWindowSizeChange = () => {
         if (window.innerWidth >= theme.breakpoints.values.md) {
@@ -61,7 +72,7 @@ function App() {
                             <Stack flexGrow={1} flexDirection="column">
                                 <Header title={tab}/>
                                 {tab === "Home" && <Home project={project}/>}
-                                {tab === "Project" && <Project project={project}/>}
+                                {tab === "Project" && <Project />}
                             </Stack>
                         </Stack>
                     </div>

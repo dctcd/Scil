@@ -14,7 +14,7 @@ from openai import OpenAI
 
 SINGLE_FILE_PROMPT = ("Analyse the code provided by the user, giving the response in a json, identifying all major, "
                       "moderate and code quality issues, giving a title, description and severity for each, noting the "
-                      "issue type and line numbers where any issues are found.")
+                      "issue type and line numbers where any issues are found. Also give the code a title.")
 CODEBASE_PROMPT = ("Analyse the code in each of the files provided by the user, giving the response in a json, with "
                    "a section for each file including the filename and a list of all major, moderate and code "
                    "quality issues, giving a title, description and severity for each, noting the issue type and "
@@ -35,6 +35,10 @@ class Issue(BaseModel):
     lineNumbers: list[int] = Field(description="Give any line numbers where the issue is found")
 
 class CodeAnalysis(BaseModel):
+    codeTitle: str = Field(description="Give the code a title in less than 5 words describing the content.")
+    issuesSummaryTitle: str = Field(description="Describe the status of the code considering the errors found in the "
+                                                "form of a title in less than 8 words")
+    issuesSummary: str = Field(description="Give summary of the issues found in the code in 20 words or less.")
     issues: list[Issue] = Field(description="A list of issues found in the code")
 
 def analyse_code(client, prompt, code, response_format):
