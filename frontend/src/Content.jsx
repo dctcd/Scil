@@ -221,7 +221,7 @@ const Content = ({inputErrors, title, headline, description, code}) => {
                             ((index === ((code.split("\n")).length-1)) ? "15px" : 0),
                             paddingTop : (index === 0) ? "10px" : 0,
                             paddingBottom : (index === ((code.split("\n")).length-1)) ? "10px" : 0}}>{index+1}</code>
-                    <Button fullWidth sx={{borderRadius: 4}} style={{
+                    <Button fullWidth style={{
                         display: "flex",
                         flexDirection: "column",
                         padding: "0px",
@@ -232,7 +232,12 @@ const Content = ({inputErrors, title, headline, description, code}) => {
                         paddingLeft: "10px",
                         paddingRight: "10px",
                         paddingTop : (index === 0) ? "10px" : 0,
-                        paddingBottom : (index === ((code.split("\n")).length-1)) ? "10px" : 0
+                        borderTopLeftRadius : "0px",
+                        borderBottomLeftRadius : "0px",
+                        paddingBottom : (index === ((code.split("\n")).length-1)) ? "10px" : 0,
+                        borderTopRightRadius : (index === 0 ? "15px" : "0px"),
+                        borderBottomRightRadius : ((index === ((code.split("\n")).length-1)) ? "15px" : "0px"),
+                        backgroundColor : (index === 6) ? "#FF000050" : "#FFF8E6"
                     }}>
                         <code>{highlightAndFormatWhitespace(line, "js")}</code>
 
