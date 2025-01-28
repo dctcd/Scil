@@ -9,7 +9,7 @@ import {Box, Button, Modal, Stack, TextField, Typography, useTheme} from "@mui/m
 import AddIcon from '@mui/icons-material/Add';
 
 import scilLogo from './resources/Scil.svg';
-import {ProjectContext, TabContext, } from "./App";
+import {AvailableProjectsContext, ProjectContext, TabContext, } from "./App";
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import MenuIcon from "@mui/icons-material/Menu";
@@ -18,6 +18,8 @@ import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-clike';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/themes/prism.css';
+import userImage from "./resources/User.svg";
+import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 
 
 
@@ -60,6 +62,7 @@ const Sidebar = () => {
     const theme = useTheme();
     const {tab, setTab} = useContext(TabContext);
     const {project, setProject} = useContext(ProjectContext);
+    const {availableProjects, setAvailableProjects} = useContext(AvailableProjectsContext);
     const [addCodeVisible, setAddCodeVisibility] = React.useState(false);
     const [codeLineNumbers, setCodeLineNumbers] = React.useState("1");
     const [codeInput, setCodeInput] = React.useState("Cuir isteach do chód anseo");
@@ -80,25 +83,30 @@ const Sidebar = () => {
                     <Typography variant="h5" sx={{marginLeft: "10px"}}>Scil</Typography>
                 </Box>
                 <NavDropdown
-                    title={<span style={{display: "inline-block",overflow:"hidden", whiteSpace:"nowrap", textOverflow: "ellipsis", maxWidth: "120px", marginLeft: "10px", marginRight: "2px"}}>Project name goes here</span>}
+                    title={<span style={{display: "inline-block",overflow:"hidden", whiteSpace:"nowrap", textOverflow: "ellipsis", maxWidth: "120px", marginLeft: "10px", marginRight: "2px"}}>{availableProjects.length >0 ? availableProjects[0] : "No project"}</span>}
 
                 >
 
-              <NavDropdown.Item href="#action/3.1"><span style={{display: "inline-block",overflow:"hidden", whiteSpace:"nowrap", textOverflow: "ellipsis", maxWidth: "125px"}}>Project name goes here</span></NavDropdown.Item>
-              <NavDropdown.Item href="#action/3.2">
-                <span style={{display: "inline-block",overflow:"hidden", whiteSpace:"nowrap", textOverflow: "ellipsis", maxWidth: "125px"}}>Project name goes here</span>
-              </NavDropdown.Item>
+
+
+                    {availableProjects.map((project, index) => (
+                <>
                     <NavDropdown.Item href="#action/3.3"><span style={{
                         display: "inline-block",
                         overflow: "hidden",
                         whiteSpace: "nowrap",
                         textOverflow: "ellipsis",
                         maxWidth: "125px"
-                    }}>Project name goes here</span></NavDropdown.Item>
-                    <NavDropdown.Divider/>
+                    }}>{project}</span></NavDropdown.Item>
+                </>
+            ))}
+
+
+
+                    {(availableProjects.length > 0) && <NavDropdown.Divider/>}
                     <NavDropdown.Item href="#action/3.4" onClick={() => {
                         setAddCodeVisibility(true);
-                        setTab("Project")
+                        // setTab("Project")
                     }}>
                         <span style={{
                             display: "inline-block",
@@ -167,20 +175,20 @@ const Sidebar = () => {
                         <Typography variant="body1">About</Typography>
                     </Button>
                 </Box>
-                <Box display="flex" align-items="center" margin="3px" marginTop="15px">
-                    <div style={{
-                        display: "inline-block",
-                        width: "2px",
-                        background: tab === "Project" ? "#000000" : "#00000000"
-                    }}></div>
-                    <Button startIcon={<AddIcon/>} sx={sidebarButtonStyle()}
-                            disableElevation size="large" onClick={() => {
-                        setAddCodeVisibility(true);
-                        setTab("Project")
-                    }}>
-                        <Typography variant="body1">Project</Typography>
-                    </Button>
-                </Box>
+                {/*<Box display="flex" align-items="center" margin="3px" marginTop="15px">*/}
+                {/*    <div style={{*/}
+                {/*        display: "inline-block",*/}
+                {/*        width: "2px",*/}
+                {/*        background: tab === "Project" ? "#000000" : "#00000000"*/}
+                {/*    }}></div>*/}
+                {/*    <Button startIcon={<AddIcon/>} sx={sidebarButtonStyle()}*/}
+                {/*            disableElevation size="large" onClick={() => {*/}
+                {/*        setAddCodeVisibility(true);*/}
+                {/*        setTab("Project")*/}
+                {/*    }}>*/}
+                {/*        <Typography variant="body1">Project</Typography>*/}
+                {/*    </Button>*/}
+                {/*</Box>*/}
                 <Modal
                     open={addCodeVisible}
                     onClose={() => {
@@ -218,7 +226,7 @@ const Sidebar = () => {
                             </Box>
                             <Button style={{margin:"12px"}} startIcon={<AddIcon/>} type="submit" variant="outlined" sx={loginButton()}
                                     disableElevation size="large" onClick={() => {
-                                getAnalysis(codeInput, setProject, setAddCodeVisibility, setTab).then(r => alert(r))
+                                getAnalysis(codeInput, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects).then(r => alert(r))
                             }}>
                                 <Typography variant="body1">Add</Typography>
                             </Button>

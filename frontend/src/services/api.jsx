@@ -10,7 +10,7 @@ const instance = axios.create({
     rejectUnauthorized: false,
 });
 
-export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab) => {
+export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects) => {
     try {
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/analyse', {
@@ -26,6 +26,10 @@ export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab
                 setProject(response.data);
                 setTab("Home");
                 setAddCodeVisibility(false);
+                if (!availableProjects.includes(response.data.codeTitle)) {
+                    var addTitle = [response.data.codeTitle];
+                    setAvailableProjects(addTitle.concat(availableProjects));
+                }
                 return response.data;
             })
             .catch(e => {

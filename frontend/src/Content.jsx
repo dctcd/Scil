@@ -12,7 +12,7 @@ import CodeOffIcon from '@mui/icons-material/CodeOff';
 import {highlight, languages} from "prismjs/components/prism-core";
 import Editor from "react-simple-code-editor";
 import parse from 'html-react-parser';
-import {highlightAndFormatWhitespace} from "./services/codeAnalysisService";
+import {highlightAndFormatWhitespace, lineContainsIssue} from "./services/codeAnalysisService";
 
 const refreshButton = () => {
     return ({
@@ -201,7 +201,7 @@ const Content = ({inputErrors, title, headline, description, code}) => {
                 {error.type === "codeQualityIssue" ? codeQualityIssue : (error.type === "moderateIssue" ? moderateIssue : majorIssue)}
                 <Typography sx={{lineHeight: "16px", marginBottom: "10px"}} key={index + "title"}>{error.title}</Typography>
                 <Typography sx={{lineHeight: "14px", marginBottom: "5px", fontSize: "12px"}} key={index + "description"}>{error.description}</Typography>
-                <Typography sx={{lineHeight: "14px", marginBottom: "5px", fontSize: "12px"}} key={index + "errors"}>{error.lineNumbers}</Typography>
+                <Typography sx={{lineHeight: "14px", marginBottom: "5px", fontSize: "12px"}} key={index + "errors"}>{error.lineNumbers.toString()}</Typography>
             </Box>
         </Button>
     ))}
@@ -215,7 +215,8 @@ const Content = ({inputErrors, title, headline, description, code}) => {
 
                 {(code.split("\n")).map((line, index) => (
                 <Stack direction="row" sx={{justifyContent: "center"}}>
-                    <code style={{backgroundColor: "#FFDD85", color: "#000000", textAlign: "center", width:
+                    <code style={{backgroundColor: (lineContainsIssue(index+1, inputErrors) ? "#F18787" : "#FFDD85"),
+                        color: (lineContainsIssue(index+1, inputErrors) ? "#FFFFFF" : "#000000"), textAlign: "center", width:
                             ((((code.split("\n")).length.toString().length * 10) + 10) + "px"), borderTopLeftRadius :
                             (index === 0 ? "15px" : 0), borderBottomLeftRadius :
                             ((index === ((code.split("\n")).length-1)) ? "15px" : 0),
@@ -237,7 +238,7 @@ const Content = ({inputErrors, title, headline, description, code}) => {
                         paddingBottom : (index === ((code.split("\n")).length-1)) ? "10px" : 0,
                         borderTopRightRadius : (index === 0 ? "15px" : "0px"),
                         borderBottomRightRadius : ((index === ((code.split("\n")).length-1)) ? "15px" : "0px"),
-                        backgroundColor : (index === 6) ? "#FF000050" : "#FFF8E6"
+                        backgroundColor : (lineContainsIssue(index+1, inputErrors)) ? "#FF000050" : "#FFF8E6"
                     }}>
                         <code>{highlightAndFormatWhitespace(line, "js")}</code>
 

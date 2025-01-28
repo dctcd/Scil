@@ -22,3 +22,12 @@ export const highlightAndFormatWhitespace = (line, language) => {
     }
     return parse(lineUnformatted);
 }
+
+export const lineContainsIssue = (lineNo, issues) => {
+    for (var i = 0; i < issues.length; i++) {
+        if (issues[i].lineNumbers.includes(lineNo)) {
+            return true;
+        }
+    }
+    return false;
+}

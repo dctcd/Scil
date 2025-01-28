@@ -10,6 +10,7 @@ import axios from "axios";
 export const SidebarContext = createContext(false);
 export const TabContext = createContext("Home");
 export const ProjectContext = createContext({});
+export const AvailableProjectsContext = createContext([]);
 
 
 
@@ -23,6 +24,7 @@ function App() {
     // TEMP - END
 
     const [project, setProject] = React.useState(projectDefault);
+    const [availableProjects, setAvailableProjects] = React.useState([]);
     const [sidebarStyle, setSidebarStyle] = React.useState(window.innerWidth >= theme.breakpoints.values.md ? "persistent" : "temporary");
     const container = undefined;
     const handleDrawerToggle = () => {
@@ -52,30 +54,32 @@ function App() {
         <SidebarContext.Provider value={{sidebarOpen, setSidebarOpen}}>
             <TabContext.Provider value={{tab, setTab}}>
                 <ProjectContext.Provider value={{project, setProject}}>
-                    <div>
-                        <Drawer
-                            container={container}
-                            variant={sidebarStyle}
-                            anchor="left"
-                            open={sidebarOpen}
-                            onClose={handleDrawerToggle}
-                            ModalProps={{
-                                keepMounted: true
-                            }}>
-                            <Sidebar/>
+                    <AvailableProjectsContext.Provider value={{availableProjects, setAvailableProjects}}>
+                        <div>
+                            <Drawer
+                                container={container}
+                                variant={sidebarStyle}
+                                anchor="left"
+                                open={sidebarOpen}
+                                onClose={handleDrawerToggle}
+                                ModalProps={{
+                                    keepMounted: true
+                                }}>
+                                <Sidebar/>
 
-                        </Drawer>
-                        <Stack direction="row">
-                            <Hidden mdDown implementation="css">
-                                <Box p={2} sx={{width: "165px"}}></Box>
-                            </Hidden>
-                            <Stack flexGrow={1} flexDirection="column">
-                                <Header title={tab}/>
-                                {tab === "Home" && <Home project={project}/>}
-                                {tab === "Project" && <Project />}
+                            </Drawer>
+                            <Stack direction="row">
+                                <Hidden mdDown implementation="css">
+                                    <Box p={2} sx={{width: "165px"}}></Box>
+                                </Hidden>
+                                <Stack flexGrow={1} flexDirection="column">
+                                    <Header title={tab}/>
+                                    {tab === "Home" && <Home project={project}/>}
+                                    {tab === "Project" && <Project />}
+                                </Stack>
                             </Stack>
-                        </Stack>
-                    </div>
+                        </div>
+                    </AvailableProjectsContext.Provider>
                 </ProjectContext.Provider>
             </TabContext.Provider>
         </SidebarContext.Provider>
