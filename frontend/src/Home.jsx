@@ -19,7 +19,8 @@ const Home = ({project}) => {
                     // [0, "Spacing", "Add space after ',' on line 3"],
                     // [2, "Null Check", "Add null check on line 10"],
                     // [1, "Type Error", "Mismatched types in comparison on line 11"]
-                } title={project.codeTitle} headline={project.issuesSummaryTitle} description={project.issuesSummary}/>
+                } title={project.codeTitle} headline={project.issuesSummaryTitle} description={project.issuesSummary}
+                code={project.code}/>
                 <Hidden mdUp implementation="css">
                     <Commits style={{float: "right"}} commitsInput={[
                         ["Fixed login bug", "Alice", "5 minutes ago", "1 major issue, 2 code quality issues"],

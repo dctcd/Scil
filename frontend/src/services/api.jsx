@@ -22,6 +22,7 @@ export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab
         })
             .then(response => {
                 // response.data = code;
+                response.data.code = code;
                 setProject(response.data);
                 setTab("Home");
                 setAddCodeVisibility(false);

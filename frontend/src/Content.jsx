@@ -9,6 +9,9 @@ import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import WarningTwoToneIcon from '@mui/icons-material/WarningTwoTone';
 import ReportIcon from '@mui/icons-material/Report';
 import CodeOffIcon from '@mui/icons-material/CodeOff';
+import {highlight, languages} from "prismjs/components/prism-core";
+import Editor from "react-simple-code-editor";
+import parse from 'html-react-parser';
 
 const refreshButton = () => {
     return ({
@@ -29,7 +32,7 @@ const instance = axios.create({
     rejectUnauthorized: false,
 });
 
-const Content = ({inputErrors, title, headline, description}) => {
+const Content = ({inputErrors, title, headline, description, code}) => {
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [token, setToken] = useState("");
@@ -203,7 +206,31 @@ const Content = ({inputErrors, title, headline, description}) => {
     ))}
 </Stack> {/* Copilot generated - END */}
 
+
             </Box>
+
+            <Box variant="body1"  color="#000000" bgcolor="#FFF8E6"
+                 sx={{borderRadius: 4, flexGrow: 1, flexDirection: "column", marginTop: "10px", marginBottom: "10px"}}>
+
+                {(code.split("\n")).map((line, index) => (
+                <Stack direction="row" sx={{justifyContent: "center"}}>
+                    <Typography>{index+1}</Typography>
+                    <Button fullWidth sx={{borderRadius: 4}} style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        // padding: "15px",
+                        textTransform: "none",
+                        color: "black",
+                        alignItems: "flex-start",
+                        textAlign: "left"
+                    }}>
+                        <code>{parse(highlight(line, languages["js"]).replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;"))}{console.log(highlight(line, languages["js"]))}</code>
+
+                    </Button>
+
+                </Stack>
+            ))}
+                </Box>
 
 
 
