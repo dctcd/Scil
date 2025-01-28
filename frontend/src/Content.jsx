@@ -12,6 +12,7 @@ import CodeOffIcon from '@mui/icons-material/CodeOff';
 import {highlight, languages} from "prismjs/components/prism-core";
 import Editor from "react-simple-code-editor";
 import parse from 'html-react-parser';
+import {highlightAndFormatWhitespace} from "./services/codeAnalysisService";
 
 const refreshButton = () => {
     return ({
@@ -210,21 +211,30 @@ const Content = ({inputErrors, title, headline, description, code}) => {
             </Box>
 
             <Box variant="body1"  color="#000000" bgcolor="#FFF8E6"
-                 sx={{borderRadius: 4, flexGrow: 1, flexDirection: "column", marginTop: "10px", marginBottom: "10px"}}>
+                 sx={{borderRadius: 4, flexGrow: 1, flexDirection: "column", marginTop: "10px", marginBottom: "10px",}}>
 
                 {(code.split("\n")).map((line, index) => (
                 <Stack direction="row" sx={{justifyContent: "center"}}>
-                    <Typography>{index+1}</Typography>
+                    <code style={{backgroundColor: "#FFDD85", color: "#000000", textAlign: "center", width:
+                            ((((code.split("\n")).length.toString().length * 10) + 10) + "px"), borderTopLeftRadius :
+                            (index === 0 ? "15px" : 0), borderBottomLeftRadius :
+                            ((index === ((code.split("\n")).length-1)) ? "15px" : 0),
+                            paddingTop : (index === 0) ? "10px" : 0,
+                            paddingBottom : (index === ((code.split("\n")).length-1)) ? "10px" : 0}}>{index+1}</code>
                     <Button fullWidth sx={{borderRadius: 4}} style={{
                         display: "flex",
                         flexDirection: "column",
-                        // padding: "15px",
+                        padding: "0px",
                         textTransform: "none",
                         color: "black",
                         alignItems: "flex-start",
-                        textAlign: "left"
+                        textAlign: "left",
+                        paddingLeft: "10px",
+                        paddingRight: "10px",
+                        paddingTop : (index === 0) ? "10px" : 0,
+                        paddingBottom : (index === ((code.split("\n")).length-1)) ? "10px" : 0
                     }}>
-                        <code>{parse(highlight(line, languages["js"]).replace("    ", "&nbsp;&nbsp;&nbsp;&nbsp;"))}{console.log(highlight(line, languages["js"]))}</code>
+                        <code>{highlightAndFormatWhitespace(line, "js")}</code>
 
                     </Button>
 
