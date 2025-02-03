@@ -5,7 +5,7 @@ import userImage from './resources/User.svg'
 import gitlabImage from './resources/GitLab.svg'
 import scilLogo from "./resources/Scil.svg";
 import MenuIcon from "@mui/icons-material/Menu";
-import {SidebarContext} from "./App"
+import {GitlabContext, SidebarContext} from "./App"
 import {updateGitlab, updateOpenai} from "./services/api";
 
 const Header = ({title}) => {
@@ -20,6 +20,7 @@ const Header = ({title}) => {
     const [openaiKeySetup, setOpenaiKeySetup] = useState(false);
     const [openaiError, setOpenaiError] = useState("");
     const {sidebarOpen, setSidebarOpen} = useContext(SidebarContext);
+    const {gitlabAuthenticated, setGitlabAuthenticated} = useContext(GitlabContext);
 
     return (<>
         <Hidden mdDown implementation="css">
@@ -115,7 +116,7 @@ const Header = ({title}) => {
                         }}
                                 disabled={gitlabPrivateKey === "" || gitlabPrivateKey === "••••••••••••••••••••••••••"}
                                 disableElevation size="large" onClick={() => {
-                                    updateGitlab(gitlabPrivateKey, setName, setUsername, setImage, setGitlabError, setUserDialogOpen);
+                                    updateGitlab(gitlabPrivateKey, setName, setUsername, setImage, setGitlabError, setGitlabAuthenticated);
                         }}>
                             <Typography variant="body1">Update</Typography>
                         </Button>

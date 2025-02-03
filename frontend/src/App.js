@@ -11,6 +11,7 @@ export const SidebarContext = createContext(false);
 export const TabContext = createContext("Home");
 export const ProjectContext = createContext({});
 export const AvailableProjectsContext = createContext([]);
+export const GitlabContext = createContext(false);
 
 
 
@@ -26,6 +27,7 @@ function App() {
     const [project, setProject] = React.useState(projectDefault);
     const [availableProjects, setAvailableProjects] = React.useState([]);
     const [sidebarStyle, setSidebarStyle] = React.useState(window.innerWidth >= theme.breakpoints.values.md ? "persistent" : "temporary");
+    const [gitlabAuthenticated, setGitlabAuthenticated] = React.useState(false);
     const container = undefined;
     const handleDrawerToggle = () => {
         setSidebarOpen(!sidebarOpen);
@@ -55,30 +57,32 @@ function App() {
             <TabContext.Provider value={{tab, setTab}}>
                 <ProjectContext.Provider value={{project, setProject}}>
                     <AvailableProjectsContext.Provider value={{availableProjects, setAvailableProjects}}>
-                        <div>
-                            <Drawer
-                                container={container}
-                                variant={sidebarStyle}
-                                anchor="left"
-                                open={sidebarOpen}
-                                onClose={handleDrawerToggle}
-                                ModalProps={{
-                                    keepMounted: true
-                                }}>
-                                <Sidebar/>
+                        <GitlabContext.Provider value={{gitlabAuthenticated, setGitlabAuthenticated}}>
+                            <div>
+                                <Drawer
+                                    container={container}
+                                    variant={sidebarStyle}
+                                    anchor="left"
+                                    open={sidebarOpen}
+                                    onClose={handleDrawerToggle}
+                                    ModalProps={{
+                                        keepMounted: true
+                                    }}>
+                                    <Sidebar/>
 
-                            </Drawer>
-                            <Stack direction="row">
-                                <Hidden mdDown implementation="css">
-                                    <Box p={2} sx={{width: "165px"}}></Box>
-                                </Hidden>
-                                <Stack flexGrow={1} flexDirection="column">
-                                    <Header title={tab}/>
-                                    {tab === "Home" && <Home project={project}/>}
-                                    {tab === "Project" && <Project />}
+                                </Drawer>
+                                <Stack direction="row">
+                                    <Hidden mdDown implementation="css">
+                                        <Box p={2} sx={{width: "165px"}}></Box>
+                                    </Hidden>
+                                    <Stack flexGrow={1} flexDirection="column">
+                                        <Header title={tab}/>
+                                        {tab === "Home" && <Home project={project}/>}
+                                        {tab === "Project" && <Project />}
+                                    </Stack>
                                 </Stack>
-                            </Stack>
-                        </div>
+                            </div>
+                        </GitlabContext.Provider>
                     </AvailableProjectsContext.Provider>
                 </ProjectContext.Provider>
             </TabContext.Provider>

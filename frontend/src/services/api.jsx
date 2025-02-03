@@ -10,7 +10,7 @@ const instance = axios.create({
     rejectUnauthorized: false,
 });
 
-export const updateGitlab = async (token, setName, setUsername, setImage, setGitlabError, setUserDialogOpen) => {
+export const updateGitlab = async (token, setName, setUsername, setImage, setGitlabError, setGitlabAuthenticated) => {
     try {
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/updateGitlab', {
@@ -30,6 +30,7 @@ export const updateGitlab = async (token, setName, setUsername, setImage, setGit
                         setImage(image);
                     }
                     setGitlabError("Updated GitLab private token");
+                    setGitlabAuthenticated(true);
                 }
                 else {
                     setGitlabError("Invalid GitLab private token");
@@ -45,6 +46,27 @@ export const updateGitlab = async (token, setName, setUsername, setImage, setGit
             });
     } catch (e) {
         setGitlabError("Could not verify GitLab private token");
+    }
+}
+
+export const getRepositories = async (setRepositories, setGitlabError) => {
+    try {
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+        await instance.get('/getRepositories')
+            .then(response => {
+                // response.data = code;
+                if (response.status === 200) {
+                    setRepositories(response.data);
+                }
+                else {
+                    setGitlabError("Error fetching repositories");
+                }
+            })
+            .catch(e => {
+                setGitlabError("Error fetching repositories");
+            });
+    } catch (e) {
+        setGitlabError("Error fetching repositories");
     }
 }
 
@@ -81,7 +103,7 @@ export const updateOpenai = async (key, setOpenaiError, setOpenaiKeySetup) => {
     }
 }
 
-export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects) => {
+export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects, setLoadingVisible) => {
     try {
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/analyse', {
@@ -101,13 +123,13 @@ export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab
                     var addTitle = [response.data.codeTitle];
                     setAvailableProjects(addTitle.concat(availableProjects));
                 }
+                setLoadingVisible(false);
                 return response.data;
             })
             .catch(e => {
-                alert(JSON.stringify(e));
+                setLoadingVisible(false);
             });
     } catch (e) {
-        if (e instanceof Error) alert(e);
+        setLoadingVisible(false);
     }
-    return "";
 }

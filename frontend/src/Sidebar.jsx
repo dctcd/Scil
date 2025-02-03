@@ -1,18 +1,20 @@
 import React, {useContext} from 'react'
-import {getAnalysis} from "./services/api";
+import {getAnalysis, getRepositories} from "./services/api";
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import {Box, Button, Modal, Stack, TextField, Typography, useTheme} from "@mui/material";
+import {Box, Button, CircularProgress, Modal, Stack, TextField, Typography, useTheme} from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 
 import scilLogo from './resources/Scil.svg';
-import {AvailableProjectsContext, ProjectContext, TabContext, } from "./App";
+import gitlabButtonIcon from './resources/GitLabButton.svg';
+import {AvailableProjectsContext, GitlabContext, ProjectContext, TabContext,} from "./App";
 import NavDropdown from 'react-bootstrap/NavDropdown';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import MenuIcon from "@mui/icons-material/Menu";
+import SourceIcon from '@mui/icons-material/Source';
+import WebIcon from '@mui/icons-material/Web';
 import Editor from 'react-simple-code-editor';
 import { highlight, languages } from 'prismjs/components/prism-core';
 import 'prismjs/components/prism-clike';
@@ -53,7 +55,7 @@ const loginButton = () => {
         backgroundColor: "#F8F8F8",
         borderColor: "#BDBDBD",
         textTransform: "none",
-        padding: 2,
+        height: "55px",
         '&:hover': {borderColor: "#000000", backgroundColor: "#F0F0F0"},
     });
 }
@@ -64,8 +66,13 @@ const Sidebar = () => {
     const {project, setProject} = useContext(ProjectContext);
     const {availableProjects, setAvailableProjects} = useContext(AvailableProjectsContext);
     const [addCodeVisible, setAddCodeVisibility] = React.useState(false);
+    const [loadingVisible, setLoadingVisible] = React.useState(false);
     const [codeLineNumbers, setCodeLineNumbers] = React.useState("1");
-    const [codeInput, setCodeInput] = React.useState("Cuir isteach do chód anseo");
+    const [codeInput, setCodeInput] = React.useState("");
+    const [submitType, setSubmitType] = React.useState("");
+    const [repositories, setRepositories] = React.useState([]);
+    const [gitlabError, setGitlabError] = React.useState("");
+    const {gitlabAuthenticated, setGitlabAuthenticated} = useContext(GitlabContext);
 
     const setCodeInputAndLineNumber = (codeInput) => {
         setCodeInput(codeInput);
@@ -198,9 +205,43 @@ const Sidebar = () => {
                     style={{display: "flex", alignItems: "center", justifyContent: "center"}}
                 >
                     <Box variant="body1"  color="black" bgcolor="#F8F8F8"
-                         sx={{borderRadius: 4, marginBottom: 2}}>
+                         sx={{borderRadius: 4, marginBottom: 2, minWidth: "420px"}}>
                         <Stack>
+                            {(submitType === "") && (<>
                             <Typography style={{margin:"12px"}} variant="h6" p={1}>Insert Code for Analysis</Typography>
+                            <Button style={{margin:"12px"}} startIcon={<WebIcon/>} type="submit" variant="outlined" sx={loginButton()}
+                                    disableElevation size="large" onClick={() => {
+                                setSubmitType("inbrowser");
+                            }}>
+                                <Typography variant="body1">Add Using Web Editor</Typography>
+                            </Button>
+                            <Button style={{marginLeft:"12px", marginRight:"12px", marginBottom:"12px"}} startIcon={<SourceIcon/>} type="submit" variant="outlined" sx={loginButton()}
+                                    disableElevation size="large" onClick={() => {
+                                setSubmitType("local");
+                            }}>
+                                <Typography variant="body1">Select Local Repository</Typography>
+                            </Button>
+                            <Button style={{marginLeft:"12px", marginRight:"12px", marginBottom:"12px"}} type="submit" variant="outlined" sx={{display: 'flex',
+                                color: "black",
+                                borderRadius: 2.5,
+                                backgroundColor: gitlabAuthenticated ? "#FC6D26" : "#FC6D2699",
+                                borderColor: "#00000000",
+                                textTransform: "none",
+                                padding: "5px",
+                                height: "55px",
+                                '&:hover': {backgroundColor: "#FC6D2699"}}}
+                                    disableElevation size="large" disabled={!gitlabAuthenticated} onClick={() => {
+                                setSubmitType("gitlab");
+                                getRepositories(setRepositories, setGitlabError);
+                            }}>
+                                <Stack direction="row" sx={{alignItems: "center"}}>
+                                    <img src={gitlabButtonIcon} height="45px" alt="GitLab"/>
+                                    {(!gitlabAuthenticated) && (
+                                    <Typography variant="body1" color="white">(Requires sign-in)</Typography>)
+                                    }
+                                </Stack>
+                            </Button></>)}
+                            {(submitType === "inbrowser") && (<><Typography style={{margin:"12px"}} variant="h6" p={1}>Code Editor</Typography>
                             <Box style={{maxHeight: "calc(100vh - 180px)", overflowX: "auto", whiteSpace: "nowrap"}}>
                             <Stack direction="horizontal" style={{background: "#EBEBEB", overflowY: "scroll"}}>
                                 <div  style={{
@@ -226,16 +267,62 @@ const Sidebar = () => {
                             </Box>
                             <Button style={{margin:"12px"}} startIcon={<AddIcon/>} type="submit" variant="outlined" sx={loginButton()}
                                     disableElevation size="large" onClick={() => {
-                                getAnalysis(codeInput, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects).then(r => alert(r))
+                                        setLoadingVisible(true);
+                                getAnalysis(codeInput, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects, setLoadingVisible);
+                                setSubmitType("");
+                                setAddCodeVisibility(false);
                             }}>
                                 <Typography variant="body1">Add</Typography>
-                            </Button>
+                            </Button></>)}
+                            {(submitType === "gitlab") && (<><Typography style={{margin:"12px"}} variant="h6" p={1}>GitLab Repositories</Typography>
+                                <Box style={{maxHeight: "calc(100vh - 200px)", overflowY: "scroll", display: "flex", flexDirection: "column", padding: "10px"}}>
+                                {repositories.map((repository, index) => (
+                                <Button style={{marginLeft:"12px", marginRight:"12px", marginBottom:"12px"}} type="submit" variant="outlined" sx={loginButton()}
+                                    disableElevation size="large" onClick={() => {
+                                        setSubmitType("");
+                                    }}>
+                                    <Typography variant="body1">{repository.name}</Typography>
+                                </Button>
+                                    ))}
+                                </Box>
+                            </>)}
+
+                            {(submitType !== "") && (<>
+                            <Button style={{marginLeft:"12px", marginRight:"12px", marginBottom:"12px"}} type="submit" variant="outlined" sx={loginButton()}
+                                    disableElevation size="large" onClick={() => {
+                                setSubmitType("");
+                            }}>
+                                <Typography variant="body1">Go Back</Typography>
+                            </Button></>)}
+
+
+
+
                         </Stack>
                     </Box>
                 </Modal>
                     </Box>
             </Stack>
+            <Modal
+                open={loadingVisible}
+
+
+                aria-labelledby="parent-modal-title-1"
+                style={{display: "flex", alignItems: "center", justifyContent: "center"}}
+            >
+                <Box variant="body1"  color="black" bgcolor="#F8F8F8"
+                     sx={{borderRadius: 4, padding: "15px"}}>
+                    <Stack direction="row">
+                        <CircularProgress color="inherit" style={{marginTop: "2px"}}/>
+                        <Stack style={{marginLeft: "15px"}}>
+                            <Typography variant="caption" color="gray">OpenAI GPT-4o</Typography>
+                            <Typography>Processing your code</Typography>
+                        </Stack>
+                    </Stack>
+                </Box>
+            </Modal>
         </Box>
+
     )
 }
 export default Sidebar
