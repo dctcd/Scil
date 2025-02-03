@@ -10,6 +10,77 @@ const instance = axios.create({
     rejectUnauthorized: false,
 });
 
+export const updateGitlab = async (token, setName, setUsername, setImage, setGitlabError, setUserDialogOpen) => {
+    try {
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+        await instance.post('/updateGitlab', {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json',
+            },
+            'token': token
+        })
+            .then(response => {
+                // response.data = code;
+                if (response.status === 200) {
+                    setName(response.data.name);
+                    setUsername(response.data.username);
+                    let image = response.data.avatar_url;
+                    if (image) {
+                        setImage(image);
+                    }
+                    setGitlabError("Updated GitLab private token");
+                }
+                else {
+                    setGitlabError("Invalid GitLab private token");
+                }
+            })
+            .catch(e => {
+                if (e.status === 401) {
+                    setGitlabError("Invalid GitLab private token");
+                }
+                else {
+                    setGitlabError("Could not verify GitLab private token");
+                }
+            });
+    } catch (e) {
+        setGitlabError("Could not verify GitLab private token");
+    }
+}
+
+export const updateOpenai = async (key, setOpenaiError, setOpenaiKeySetup) => {
+    try {
+        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+        await instance.post('/updateOpenai', {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json',
+            },
+            'key': key
+        })
+            .then(response => {
+                // response.data = code;
+                if (response.status === 200) {
+                    setOpenaiKeySetup(true);
+                    setOpenaiError("Updated OpenAI API key");
+                }
+                else {
+                    setOpenaiError("Invalid OpenAI API key");
+                }
+            })
+            .catch(e => {
+                if (e.status === 400) {
+                    setOpenaiError("Invalid OpenAI API key");
+                }
+                else {
+                    setOpenaiError("Could not verify OpenAI API key");
+                }
+            });
+    } catch (e) {
+        setOpenaiError("Could not verify OpenAI API key");
+    }
+}
+
 export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects) => {
     try {
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;

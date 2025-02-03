@@ -1,6 +1,9 @@
 import json
 import os
 import subprocess
+
+import dotenv
+import requests
 from enum import Enum
 
 from dotenv import load_dotenv
@@ -93,7 +96,6 @@ def analyse_multiple_files(client, path):
 
     return analyse_code(client, CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis), directory_structure
 
-
 if __name__ == "__main__":
     load_dotenv(".env")
     openai_client = OpenAI()
@@ -120,7 +122,69 @@ if __name__ == "__main__":
         except Exception as e:
             return {"error": "Internal Server Error"}, 500
 
+        return (parsed_json, 200)
+
+    @app.route('/getRepositories', methods=['GET'])
+    @cross_origin()
+    def get_repositories():
+        # data = request.json
+        # code = data.get('code')
+        try:
+            private_token = os.environ.get("GITLAB_API_KEY")
+            if not private_token:
+                return {"error": "Unauthorised"}, 401
+            response = requests.get(
+                "https://gitlab.scss.tcd.ie/api/v4/projects"
+                f"?private_token={private_token}&per_page=100&membership=true&simple=true")
+
+            parsed_json = json.loads(response.content)
+        except json.JSONDecodeError as e:
+            print(e)
+            return {"error": "Invalid JSON"}, 400
+        except Exception as e:
+            return {"error": "Internal Server Error"}, 500
+        json_trimmed = []
+        for repository in parsed_json:
+            json_trimmed.append({"name": repository["name"], "id": repository["id"]})
+        return json_trimmed, 200
+
+
+    @app.route('/updateGitlab', methods=['POST'])
+    @cross_origin()
+    def update_gitlab():
+        data = request.json
+        gitlab_private_token = data.get('token')
+        if not gitlab_private_token:
+            return {"error": "No token provided"}, 400
+        try:
+            response = requests.get(
+                "https://gitlab.scss.tcd.ie/api/v4/user"
+                f"?private_token={gitlab_private_token}")
+            if response.status_code != 200:
+                return {"error": response.text}, response.status_code
+            parsed_json = json.loads(response.content)
+        except json.JSONDecodeError as e:
+            print(e)
+            return {"error": "Invalid JSON"}, 400
+        except Exception as e:
+            return {"error": "Internal Server Error"}, 500
+
+        dotenv.set_key(".env", "GITLAB_API_KEY", gitlab_private_token)
         return parsed_json, 200
 
+
+    @app.route('/updateOpenai', methods=['POST'])
+    @cross_origin()
+    def update_openai():
+        data = request.json
+        openai_api_key = data.get('key')
+        if not openai_api_key:
+            return {"error": "No key provided"}, 400
+        if not openai_api_key.startswith("sk-"):
+            return {"error": "Invalid key"}, 400
+        dotenv.set_key(".env", "OPENAI_API_KEY", openai_api_key)
+        return {}, 200
+
     app.run(port=5000)
+
 
