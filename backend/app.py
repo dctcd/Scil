@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import pickle
 
 import dotenv
 import requests
@@ -14,6 +15,7 @@ from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO
 from pydantic import BaseModel, Field
 from openai import OpenAI
+from numpy import concatenate
 
 SINGLE_FILE_PROMPT = ("Analyse the code provided by the user, giving the response in a json, identifying all major, "
                       "moderate and code quality issues, giving a title, description and severity for each, noting the "
@@ -67,10 +69,8 @@ def get_directory_structure(packed_codebase):
     print(filepaths)
     return filepaths
 
-def pack_codebase(path):
-    print(subprocess.check_output(
-        ['repomix', path, '--output', 'out.xml', '--output-show-line-numbers', '--no-security-check', '--style', 'xml',
-         '--ignore', '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env']))
+def pack_codebase(command):
+    print(subprocess.check_output(command))
     if not os.path.isfile('out.xml'):
         raise PackException("Packed codebase file not found")
     file = open('out.xml', 'r')
@@ -81,8 +81,8 @@ def pack_codebase(path):
     os.remove("out.xml") # Delete packed codebase
     return packed_codebase, directory_structure
 
-def analyse_multiple_files(client, path):
-    packed_codebase, directory_structure = pack_codebase(path)
+def analyse_multiple_files(client, command):
+    packed_codebase, directory_structure = pack_codebase(command)
     print(packed_codebase)
     print(directory_structure)
 
@@ -95,6 +95,14 @@ def analyse_multiple_files(client, path):
         files: list[FileAnalysis]
 
     return analyse_code(client, CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis), directory_structure
+
+def analyse_local_codebase(client, path):
+    return analyse_multiple_files(client, ['repomix', path, '--output', 'out.xml', '--output-show-line-numbers', '--no-security-check', '--style', 'xml',
+         '--ignore', '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
+
+def analyse_remote_codebase(client, url):
+    return analyse_multiple_files(client, ['repomix', '--remote', url, '--output', 'out.xml', '--output-show-line-numbers', '--no-security-check', '--style', 'xml',
+         '--ignore', '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
 
 if __name__ == "__main__":
     load_dotenv(".env")
@@ -124,6 +132,23 @@ if __name__ == "__main__":
 
         return (parsed_json, 200)
 
+
+    @app.route('/analyseRemoteRepository', methods=['POST'])
+    @cross_origin()
+    def analyse_remote_repository():
+        data = request.json
+        url = data.get('url')
+        try:
+            json_string, directory_structure = analyse_remote_codebase(openai_client, url)
+            parsed_json = json.loads(json_string)
+        except json.JSONDecodeError as e:
+            print(e)
+            return {"error": "Invalid JSON"}, 400
+        except Exception as e:
+            return {"error": "Internal Server Error"}, 500
+
+        return parsed_json, 200
+
     @app.route('/getRepositories', methods=['GET'])
     @cross_origin()
     def get_repositories():
@@ -145,7 +170,7 @@ if __name__ == "__main__":
             return {"error": "Internal Server Error"}, 500
         json_trimmed = []
         for repository in parsed_json:
-            json_trimmed.append({"name": repository["name"], "id": repository["id"]})
+            json_trimmed.append({"name": repository["name"], "id": repository["id"], "url": repository["http_url_to_repo"]})
         return json_trimmed, 200
 
 
@@ -188,3 +213,4 @@ if __name__ == "__main__":
     app.run(port=5000)
 
 
+# repomix --remote [REPO_HERE] --output out.xml --output-show-line-numbers --no-security-check --style xml --ignore **/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env
