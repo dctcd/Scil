@@ -20,7 +20,7 @@ function App() {
     const [sidebarOpen, setSidebarOpen] = React.useState(window.innerWidth >= theme.breakpoints.values.md);
     const [tab, setTab] = React.useState("Home");
     // TEMP - BEGIN
-        var projectDefault = JSON.parse("{\"codeTitle\" : \"Title\", \"issuesSummaryTitle\" : \"Issues Title\", \"issuesSummary\" : \"Issues Summary\", \"code\" : \"Code\", \"issues\" : [{\"title\" : \"title\", \"description\" : \"description\", \"type\" : \"codeQualityIssue\", \"severity\" : 0.3, \"lineNumbers\" : [1]}]}");
+        var projectDefault = JSON.parse("{\"codeTitle\" : [\"path/title\"], \"issuesSummaryTitle\" : \"Issues Title\", \"issuesSummary\" : \"Issues Summary\", \"code\" : \"Code\", \"issues\" : [{\"title\" : \"title\", \"description\" : \"description\", \"type\" : \"codeQualityIssue\", \"severity\" : 0.3, \"lineNumbers\" : [1]}]}");
 
     // TEMP - END
 

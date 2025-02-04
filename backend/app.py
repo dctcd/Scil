@@ -99,15 +99,24 @@ def analyse_multiple_files(client, command):
 
         files: list[FileAnalysis]
 
-    return analyse_code(client, CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis), directory_structure
+    code_analysis = analyse_code(client, CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis)
+    return json.loads(code_analysis)
 
 def analyse_local_codebase(client, path):
     return analyse_multiple_files(client, ['repomix', path, '--output', 'out.xml', '--output-show-line-numbers', '--no-security-check', '--style', 'xml',
          '--ignore', '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
 
-def analyse_remote_codebase(client, url):
-    return analyse_multiple_files(client, ['repomix', '--remote', url, '--output', 'out.xml', '--output-show-line-numbers', '--no-security-check', '--style', 'xml',
+def analyse_remote_codebase(client, url, project_number):
+    json_analysis = analyse_multiple_files(client, ['repomix', '--remote', url, '--output', 'out.xml', '--output-show-line-numbers', '--no-security-check', '--style', 'xml',
          '--ignore', '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
+    for file in json_analysis.get("files"):
+        filepath = file["filepath"][0].replace("/","%2F")
+        code = requests.get(
+            "https://gitlab.scss.tcd.ie/api/v4/projects/{}/repository/files/{}/raw"
+            "?private_token={}&per_page=100&membership=true&ref=main"
+            .format(project_number, filepath, os.environ.get("GITLAB_API_KEY")))
+        file["code"] = code.text
+    return json_analysis
 
 if __name__ == "__main__":
     load_dotenv(".env")
@@ -143,16 +152,16 @@ if __name__ == "__main__":
     def analyse_remote_repository():
         data = request.json
         url = data.get('url')
+        project_number = data.get('number')
         try:
-            json_string, directory_structure = analyse_remote_codebase(openai_client, url)
-            parsed_json = json.loads(json_string)
+            json_string = analyse_remote_codebase(openai_client, url, project_number)
         except json.JSONDecodeError as e:
             print(e)
             return {"error": "Invalid JSON"}, 400
         except Exception as e:
             return {"error": "Internal Server Error"}, 500
 
-        return parsed_json, 200
+        return json_string, 200
 
     @app.route('/getRepositories', methods=['GET'])
     @cross_origin()

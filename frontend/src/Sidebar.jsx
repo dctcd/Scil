@@ -280,7 +280,7 @@ const Sidebar = () => {
                                 <Button style={{marginLeft:"12px", marginRight:"12px", marginBottom:"12px"}} type="submit" variant="outlined" sx={loginButton()}
                                     disableElevation size="large" onClick={() => {
                                         setLoadingVisible(true);
-                                getRemoteCodebaseAnalysis(repository.url, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects, setLoadingVisible);
+                                getRemoteCodebaseAnalysis(repository.url, repository.id, repository.name, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects, setLoadingVisible);
                                 setSubmitType("");
                                 setAddCodeVisibility(false);
                                     }}>

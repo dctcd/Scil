@@ -12,7 +12,7 @@ import CodeOffIcon from '@mui/icons-material/CodeOff';
 import {highlight, languages} from "prismjs/components/prism-core";
 import Editor from "react-simple-code-editor";
 import parse from 'html-react-parser';
-import {highlightAndFormatWhitespace, lineContainsIssue} from "./services/codeAnalysisService";
+import {getLineHighlight, highlightAndFormatWhitespace, lineContainsIssue} from "./services/codeAnalysisService";
 
 
 
@@ -129,8 +129,16 @@ const Content = ({inputErrors, title, headline, description, code}) => {
 
 
 
-            <Box sx={{borderRadius: 4, flexGrow: 1, flexDirection: "column", overflowX: "scroll", /*width: "900px",*/ overflow: "hidden"}}>
-            <Stack direction="row" sx={{overflowX: "auto"}}> {/* Copilot generated - BEGIN*/}
+
+            <Box style={{padding: "10px", backgroundColor: "#FFDD85", borderRadius: "15px", marginTop: "15px",
+            marginBottom: "10px", flexBasis: "content", width: "fit-content"}}>
+                <Stack direction="row" style={{alignItems: "end"}}>
+                    <Typography variant="caption" color="#00000099">{title[0].includes("/") ? title[0].substring(0, title[0].lastIndexOf("/")+1): ""}</Typography>
+                    <Typography variant="title" style={{marginLeft: "2px"}}>{title[0].includes("/") ? title[0].substring(title[0].lastIndexOf("/")+1) : title[0]}</Typography>
+                </Stack>
+            </Box>
+
+                <Stack direction="row" sx={{overflowX: "auto"}}> {/* Copilot generated - BEGIN*/}
     {(inputErrors).map((error, index) => (
         <Button key={index + "button"} fullWidth sx={{ borderRadius: "20px" }} style={{ background: "#FFF8E6", display: "flex", flexDirection: "row", textTransform: "none", color: "black", marginRight: "10px", alignItems: "flex-start", width: "150px", flexShrink: 0 }}>
             <Box key={index + "box"} sx={{  flexDirection: "row", alignItems: "stretch", width: "100%" }}>
@@ -142,17 +150,13 @@ const Content = ({inputErrors, title, headline, description, code}) => {
         </Button>
     ))}
 </Stack> {/* Copilot generated - END */}
-
-
-            </Box>
-
             <Box variant="body1"  color="#000000" bgcolor="#FFF8E6"
                  sx={{borderRadius: 4, flexGrow: 1, flexDirection: "column", marginTop: "10px", marginBottom: "10px",}}>
 
                 {(code.split("\n")).map((line, index) => (
                 <Stack direction="row" sx={{justifyContent: "center"}}>
-                    <code style={{backgroundColor: (lineContainsIssue(index+1, inputErrors) ? "#F18787" : "#FFDD85"),
-                        color: (lineContainsIssue(index+1, inputErrors) ? "#FFFFFF" : "#000000"), textAlign: "center", width:
+                    <code style={{backgroundColor: getLineHighlight(index+1, inputErrors, true),
+                        color: lineContainsIssue(index+1, inputErrors) ? "#FFFFFF" : "#000000", textAlign: "center", width:
                             ((((code.split("\n")).length.toString().length * 10) + 10) + "px"), borderTopLeftRadius :
                             (index === 0 ? "15px" : 0), borderBottomLeftRadius :
                             ((index === ((code.split("\n")).length-1)) ? "15px" : 0),
@@ -174,7 +178,7 @@ const Content = ({inputErrors, title, headline, description, code}) => {
                         paddingBottom : (index === ((code.split("\n")).length-1)) ? "10px" : 0,
                         borderTopRightRadius : (index === 0 ? "15px" : "0px"),
                         borderBottomRightRadius : ((index === ((code.split("\n")).length-1)) ? "15px" : "0px"),
-                        backgroundColor : (lineContainsIssue(index+1, inputErrors)) ? "#FF000050" : "#FFF8E6"
+                        backgroundColor : getLineHighlight(index+1, inputErrors, false)
                     }}>
                         <code>{highlightAndFormatWhitespace(line, "js")}</code>
 

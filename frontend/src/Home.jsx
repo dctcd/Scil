@@ -57,7 +57,7 @@ const Home = ({project}) => {
                     {(!isSingleFile(project)) && (
                         project["files"].map((file, index) => (<Content inputErrors={file.issues} title={file.filepath} headline={""}
                              description={""}
-                             code={"PLACEHOLDER – ADD IN CODE GE FUNCTIONALITY"}/>)))}
+                             code={file.code}/>)))}
                     <Hidden mdUp implementation="css">
                         <Commits style={{float: "right"}} commitsInput={[
                             ["Fixed login bug", "Alice", "5 minutes ago", "1 major issue, 2 code quality issues"],

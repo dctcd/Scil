@@ -134,7 +134,7 @@ export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab
     }
 }
 
-export const getRemoteCodebaseAnalysis = async (url, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects, setLoadingVisible) => {
+export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects, setLoadingVisible) => {
     try {
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/analyseRemoteRepository', {
@@ -142,17 +142,29 @@ export const getRemoteCodebaseAnalysis = async (url, setProject, setAddCodeVisib
                 'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json',
             },
-            url: url
+            url: url,
+            number: projectNumber
         })
             .then(response => {
                 // response.data = code;
                 setProject(response.data);
                 setTab("Home");
                 setAddCodeVisibility(false);
-                // if (!availableProjects.includes(response.data.codeTitle)) {
-                    var addTitle = ["+ TITL TO PROJECT"];
-                    setAvailableProjects(addTitle.concat(availableProjects));
-                // }
+                var index = 1;
+                if (availableProjects.includes(title)) {
+                    while (true) {
+                        if (availableProjects.includes(title + " " + index)) {
+                            index++;
+                        }
+                        else {
+                            setAvailableProjects([title + " " + index].concat(availableProjects));
+                            break;
+                        }
+                    }
+                }
+                else {
+                     setAvailableProjects([title].concat(availableProjects));
+                }
                 setLoadingVisible(false);
                 return response.data;
             })

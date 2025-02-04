@@ -23,6 +23,24 @@ export const highlightAndFormatWhitespace = (line, language) => {
     return parse(lineUnformatted);
 }
 
+export const getLineHighlight = (lineNo, issues, isMargin) => {
+    var colour = isMargin ? "#FFDD85" : "#FFF8E6";
+    for (var i = 0; i < issues.length; i++) {
+        if (issues[i].lineNumbers.includes(lineNo)) {
+            if(issues[i].type === "majorIssue") {
+                colour = isMargin ? "#FF0000" : "#FF000040";
+            }
+            else if (issues[i].type === "moderateIssue" && colour !== "#FF000050") {
+                colour = isMargin ? "#EABB41" : "#FFDD8570";
+            }
+            else if (issues[i].type === "codeQualityIssue" && colour !== "#FF000050" && colour !== "#FFDD8550") {
+                colour = isMargin ? "#000000" : "#00000030";
+            }
+        }
+    }
+    return colour;
+}
+
 export const lineContainsIssue = (lineNo, issues) => {
     for (var i = 0; i < issues.length; i++) {
         if (issues[i].lineNumbers.includes(lineNo)) {
