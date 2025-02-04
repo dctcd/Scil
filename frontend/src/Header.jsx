@@ -1,4 +1,4 @@
-import React, {useContext, useState} from 'react'
+import React, {useContext, useState, useEffect} from 'react'
 import {Box, Button, Hidden, InputAdornment, Modal, Stack, TextField, Typography} from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import userImage from './resources/User.svg'
@@ -6,9 +6,10 @@ import gitlabImage from './resources/GitLab.svg'
 import scilLogo from "./resources/Scil.svg";
 import MenuIcon from "@mui/icons-material/Menu";
 import {GitlabContext, SidebarContext} from "./App"
-import {updateGitlab, updateOpenai} from "./services/api";
+import {getAuthenticationStatus, updateGitlab, updateOpenai} from "./services/api";
 
 const Header = ({title}) => {
+
 
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
@@ -21,6 +22,10 @@ const Header = ({title}) => {
     const [openaiError, setOpenaiError] = useState("");
     const {sidebarOpen, setSidebarOpen} = useContext(SidebarContext);
     const {gitlabAuthenticated, setGitlabAuthenticated} = useContext(GitlabContext);
+
+    useEffect(() => {
+        getAuthenticationStatus(setGitlabAuthenticated, setOpenaiKeySetup, setName, setUsername, setImage);
+    }, []);
 
     return (<>
         <Hidden mdDown implementation="css">

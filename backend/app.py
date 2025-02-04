@@ -118,6 +118,13 @@ def analyse_remote_codebase(client, url, project_number):
         file["code"] = code.text
     return json_analysis
 
+def check_openai(openai_api_key):
+    if not openai_api_key:
+        return False, "No key provided"
+    if not openai_api_key.startswith("sk-"):
+        return False, "Invalid key"
+    return True, ""
+
 if __name__ == "__main__":
     load_dotenv(".env")
     openai_client = OpenAI()
@@ -209,6 +216,7 @@ if __name__ == "__main__":
             return {"error": "Internal Server Error"}, 500
 
         dotenv.set_key(".env", "GITLAB_API_KEY", gitlab_private_token)
+        load_dotenv(".env")
         return parsed_json, 200
 
 
@@ -217,12 +225,27 @@ if __name__ == "__main__":
     def update_openai():
         data = request.json
         openai_api_key = data.get('key')
-        if not openai_api_key:
-            return {"error": "No key provided"}, 400
-        if not openai_api_key.startswith("sk-"):
-            return {"error": "Invalid key"}, 400
-        dotenv.set_key(".env", "OPENAI_API_KEY", openai_api_key)
-        return {}, 200
+        authenticated, reason = check_openai(openai_api_key)
+        if authenticated:
+            dotenv.set_key(".env", "OPENAI_API_KEY", openai_api_key)
+            load_dotenv(".env")
+            return {}, 200
+        return {"error": reason}, 400
+
+    # Checks if the user is authenticated for GitLab and OpenAI API
+    @app.route('/getAuthenticationStatus', methods=['GET'])
+    @cross_origin()
+    def get_authentication_status():
+        load_dotenv(".env")
+        gitlab_authenticated = True
+        response = requests.get(
+            "https://gitlab.scss.tcd.ie/api/v4/user"
+            f"?private_token={os.environ.get("GITLAB_API_KEY")}")
+        openai_authenticated, reason = check_openai(os.environ.get("OPENAI_API_KEY"))
+        if response.status_code != 200:
+            return {"gitlabAuthenticated": False, "openaiAuthenticated": openai_authenticated}, 200
+        parsed_json = json.loads(response.content)
+        return {"gitlabAuthenticated": True, "openaiAuthenticated": openai_authenticated, "avatar_url" : parsed_json["avatar_url"], "name" : parsed_json["name"], "username" : parsed_json["username"]}, 200
 
     app.run(port=5000)
 

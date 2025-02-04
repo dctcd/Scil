@@ -175,3 +175,20 @@ export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setPr
         setLoadingVisible(false);
     }
 }
+
+export const getAuthenticationStatus = async (setGitlabAuthenticated, setOpenaiKeySetup, setName, setUsername, setImage) => {
+    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+    await instance.get('/getAuthenticationStatus')
+        .then(response => {
+            if (response.status === 200) {
+                setGitlabAuthenticated(response.data.gitlabAuthenticated);
+                setOpenaiKeySetup(response.data.openaiAuthenticated);
+                setName(response.data.name);
+                setUsername(response.data.username);
+                let image = response.data.avatar_url;
+                if (image) {
+                    setImage(image);
+                }
+            }
+        });
+}

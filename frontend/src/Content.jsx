@@ -133,8 +133,10 @@ const Content = ({inputErrors, title, headline, description, code}) => {
             <Box style={{padding: "10px", backgroundColor: "#FFDD85", borderRadius: "15px", marginTop: "15px",
             marginBottom: "10px", flexBasis: "content", width: "fit-content"}}>
                 <Stack direction="row" style={{alignItems: "end"}}>
-                    <Typography variant="caption" color="#00000099">{title[0].includes("/") ? title[0].substring(0, title[0].lastIndexOf("/")+1): ""}</Typography>
-                    <Typography variant="title" style={{marginLeft: "2px"}}>{title[0].includes("/") ? title[0].substring(title[0].lastIndexOf("/")+1) : title[0]}</Typography>
+                    <Typography variant="caption" color="#00000099">{title[0].includes("/") ?
+                        title[0].substring(0, title[0].lastIndexOf("/")+1): ""}</Typography>
+                    <Typography variant="title" style={{marginLeft: "2px"}}>{title[0].includes("/") ?
+                        title[0].substring(title[0].lastIndexOf("/")+1) : title[0]}</Typography>
                 </Stack>
             </Box>
 
