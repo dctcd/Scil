@@ -92,6 +92,11 @@ def analyse_multiple_files(client, command):
         issues: list[Issue] = Field(description="List of code issues within the file at the given filepath")
 
     class CodebaseAnalysis(BaseModel):
+        issuesSummaryTitle: str = Field(
+            description="Describe the status of the code considering the errors found in the "
+                        "form of a title in less than 8 words")
+        issuesSummary: str = Field(description="Give summary of the issues found in the code in 20 words or less.")
+
         files: list[FileAnalysis]
 
     return analyse_code(client, CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis), directory_structure

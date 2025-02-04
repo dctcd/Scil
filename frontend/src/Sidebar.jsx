@@ -1,5 +1,5 @@
 import React, {useContext} from 'react'
-import {getAnalysis, getRepositories} from "./services/api";
+import {getAnalysis, getRemoteCodebaseAnalysis, getRepositories} from "./services/api";
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
@@ -279,7 +279,10 @@ const Sidebar = () => {
                                 {repositories.map((repository, index) => (
                                 <Button style={{marginLeft:"12px", marginRight:"12px", marginBottom:"12px"}} type="submit" variant="outlined" sx={loginButton()}
                                     disableElevation size="large" onClick={() => {
-                                        setSubmitType("");
+                                        setLoadingVisible(true);
+                                getRemoteCodebaseAnalysis(repository.url, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects, setLoadingVisible);
+                                setSubmitType("");
+                                setAddCodeVisibility(false);
                                     }}>
                                     <Typography variant="body1">{repository.name}</Typography>
                                 </Button>

@@ -14,17 +14,7 @@ import Editor from "react-simple-code-editor";
 import parse from 'html-react-parser';
 import {highlightAndFormatWhitespace, lineContainsIssue} from "./services/codeAnalysisService";
 
-const refreshButton = () => {
-    return ({
-        color: "black",
-        borderRadius: 2.5,
-        backgroundColor: "#FFDD85",
-        borderColor: "#FFDD85",
-        textTransform: "none",
-        width: "110px",
-        '&:hover': {borderColor: "#000000", backgroundColor: "#F0F0F0"},
-    });
-}
+
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 const instance = axios.create({
@@ -38,25 +28,7 @@ const Content = ({inputErrors, title, headline, description, code}) => {
     const [username, setUsername] = useState("");
     const [token, setToken] = useState("");
     const [loggedIn, setLoggedIn] = useState(false);
-    const refresh = async () => {
 
-        let username_cookie = document.cookie.split('; ').find(cookie => cookie.startsWith('username='));
-        if (username_cookie) {
-            username_cookie = username_cookie.split('=')[1];
-            setUsername(username_cookie);
-        }
-        let name_cookie = document.cookie.split('; ').find(cookie => cookie.startsWith('name='));
-        if (name_cookie) {
-            name_cookie = name_cookie.split('=')[1];
-            setName(name_cookie);
-        }
-        let token_cookie = document.cookie.split('; ').find(cookie => cookie.startsWith('token='));
-        if (token_cookie) {
-            token_cookie = token_cookie.split('=')[1];
-            setToken(token_cookie);
-        }
-        await getMessages(name_cookie, username_cookie, token_cookie);
-    };
 
     const [messages, setMessages] = useState([]);
 
@@ -85,29 +57,7 @@ const Content = ({inputErrors, title, headline, description, code}) => {
         return false;
     }
 
-    const sendMessage = async () => {
-        try {
-            refresh();
-            process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-            await instance.post('/sendMessage', {
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json',
-                },
-                name: name, message: message, username: username, token: token
-            })
-                .then(response => {
-                    refresh();
-                    return true;
-                })
-                .catch(_ => {
-                    return false;
-                });
-        } catch (e) {
-            if (e instanceof Error) alert(e);
-        }
-        return false;
-    }
+
 
     const [message, setMessage] = useState("");
     const handleInput = (message) => {
@@ -178,26 +128,12 @@ const Content = ({inputErrors, title, headline, description, code}) => {
         <div style={errorStackStyle()}>
 
 
-            <Box variant="body1" p={2.25} color="#000000" bgcolor="#FFF8E6"
-                 sx={{borderRadius: 4, flexGrow: 1, flexDirection: "column", marginBottom: "10px"}}>
-                <Stack direction="row">
 
-                    <Stack direction="column" sx={{flexGrow: 1, justifyContent: "center"}}>
-                        <Typography fontSize="32px" display="inline" sx={{lineHeight: "32px", marginBottom: "15px"}}>{headline}</Typography>
-                        <Typography fontSize="16px" display="inline" sx={{lineHeight: "16px", marginBottom: "15px"}}>{description}</Typography>
-                        <Button startIcon={<SyncIcon/>} type="submit" variant="outlined" sx={refreshButton()}
-                            disableElevation size="large" onClick={refresh}>
-                            <Typography variant="body1">Refresh</Typography>
-                        </Button>
-                    </Stack>
-                    <img src={scilLogo} style={{height: "150px", margin: "70px"}} alt="Scil"/>
-                </Stack>
-            </Box>
             <Box sx={{borderRadius: 4, flexGrow: 1, flexDirection: "column", overflowX: "scroll", /*width: "900px",*/ overflow: "hidden"}}>
             <Stack direction="row" sx={{overflowX: "auto"}}> {/* Copilot generated - BEGIN*/}
     {(inputErrors).map((error, index) => (
         <Button key={index + "button"} fullWidth sx={{ borderRadius: "20px" }} style={{ background: "#FFF8E6", display: "flex", flexDirection: "row", textTransform: "none", color: "black", marginRight: "10px", alignItems: "flex-start", width: "150px", flexShrink: 0 }}>
-            <Box key={index + "box"} sx={{  flexDirection: "row", alignItems: "stretch", width: "100%", marginTop: "5px" }}>
+            <Box key={index + "box"} sx={{  flexDirection: "row", alignItems: "stretch", width: "100%" }}>
                 {error.type === "codeQualityIssue" ? codeQualityIssue : (error.type === "moderateIssue" ? moderateIssue : majorIssue)}
                 <Typography sx={{lineHeight: "16px", marginBottom: "10px"}} key={index + "title"}>{error.title}</Typography>
                 <Typography sx={{lineHeight: "14px", marginBottom: "5px", fontSize: "12px"}} key={index + "description"}>{error.description}</Typography>
@@ -249,25 +185,6 @@ const Content = ({inputErrors, title, headline, description, code}) => {
                 </Box>
 
 
-
-            <Stack>
-                <Stack direction="row">
-
-
-                    {(loggedIn) && (
-                        <TextField fullWidth id="outlined-basic" label="Message" variant="outlined"
-                                   InputProps={{style: {borderRadius: 10, marginBottom: 15}}}
-                                   onChange={message_input => {
-                                       handleInput(message_input.target.value);
-                                   }}
-                                   onKeyDown={key => {
-                                       if (key.key === "Enter") {
-                                           sendMessage()
-                                       }
-                                   }}/>
-                    )}
-                </Stack>
-            </Stack>
             {/*<Stack>*/}
             {/*    {*/}
             {/*        messages.map((message, index) => (*/}
