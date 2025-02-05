@@ -90,7 +90,7 @@ const Sidebar = () => {
                     <Typography variant="h5" sx={{marginLeft: "10px"}}>Scil</Typography>
                 </Box>
                 <NavDropdown
-                    title={<span style={{display: "inline-block",overflow:"hidden", whiteSpace:"nowrap", textOverflow: "ellipsis", maxWidth: "120px", marginLeft: "10px", marginRight: "2px"}}>{availableProjects.length >0 ? availableProjects[0] : "No project"}</span>}
+                    title={<span style={{display: "inline-block",overflow:"hidden", whiteSpace:"nowrap", textOverflow: "ellipsis", maxWidth: "120px", marginLeft: "10px", marginRight: "2px"}}>{availableProjects.length >0 ? availableProjects[0] : "New Project"}</span>}
 
                 >
 
@@ -125,20 +125,33 @@ const Sidebar = () => {
                     </NavDropdown.Item>
                 </NavDropdown>
                 <Box p={2}>
-                    <Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
+                    {(JSON.stringify(project) !== "{}") && (<Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
                     <div style={{
                         display: "inline-block",
                         width: "2px",
-                        background: tab === "Home" ? "#000000" : "#00000000",
+                        background: tab === "Code" ? "#000000" : "#00000000",
+                        marginTop: "2px",
+                        marginBottom: "2px"
+                    }}></div>
+                    <Button startIcon={<CodeOutlinedIcon/>} sx={sidebarButtonStyle()}
+                            disableElevation size="large" onClick={() => setTab("Code")}>
+                        <Typography variant="body1">{"Code"}</Typography>
+                    </Button>
+                </Box>)}
+                    {(JSON.stringify(project) === "{}") && (<Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
+                    <div style={{
+                        display: "inline-block",
+                        width: "2px",
+                        background: (tab === "Home" || tab === "About") ? "#000000" : "#00000000",
                         marginTop: "2px",
                         marginBottom: "2px"
                     }}></div>
                     <Button startIcon={<HomeOutlinedIcon/>} sx={sidebarButtonStyle()}
                             disableElevation size="large" onClick={() => setTab("Home")}>
-                        <Typography variant="body1">Home</Typography>
+                        <Typography variant="body1">{"Home"}</Typography>
                     </Button>
-                </Box>
-                <Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
+                </Box>)}
+                {(JSON.stringify(project) !== "{}") && (<Box display="flex" disabled align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
                     <div style={{
                         display: "inline-block",
                         width: "2px",
@@ -148,18 +161,18 @@ const Sidebar = () => {
                             disableElevation size="large" onClick={() => setTab("Team")}>
                         <Typography variant="body1">Team</Typography>
                     </Button>
-                </Box>
-                <Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
-                    <div style={{
-                        display: "inline-block",
-                        width: "2px",
-                        background: tab === "code" ? "#000000" : "#00000000"
-                    }}></div>
-                    <Button startIcon={<CodeOutlinedIcon/>} sx={sidebarButtonStyle()}
-                            disableElevation size="large" onClick={() => setTab("Code")}>
-                        <Typography variant="body1">Code</Typography>
-                    </Button>
-                </Box>
+                </Box>)}
+                {/*<Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>*/}
+                {/*    <div style={{*/}
+                {/*        display: "inline-block",*/}
+                {/*        width: "2px",*/}
+                {/*        background: tab === "code" ? "#000000" : "#00000000"*/}
+                {/*    }}></div>*/}
+                {/*    <Button startIcon={<CodeOutlinedIcon/>} sx={sidebarButtonStyle()}*/}
+                {/*            disableElevation size="large" onClick={() => setTab("Code")}>*/}
+                {/*        <Typography variant="body1">Code</Typography>*/}
+                {/*    </Button>*/}
+                {/*</Box>*/}
                 <Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
                     <div style={{
                         display: "inline-block",
@@ -171,7 +184,7 @@ const Sidebar = () => {
                         <Typography variant="body1">Settings</Typography>
                     </Button>
                 </Box>
-                <Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
+                {(JSON.stringify(project) !== "{}") && (<Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
                     <div style={{
                         display: "inline-block",
                         width: "2px",
@@ -181,7 +194,7 @@ const Sidebar = () => {
                             disableElevation size="large" onClick={() => setTab("About")}>
                         <Typography variant="body1">About</Typography>
                     </Button>
-                </Box>
+                </Box>)}
                 {/*<Box display="flex" align-items="center" margin="3px" marginTop="15px">*/}
                 {/*    <div style={{*/}
                 {/*        display: "inline-block",*/}

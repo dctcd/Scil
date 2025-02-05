@@ -143,7 +143,7 @@ const Content = ({inputErrors, title, headline, description, code}) => {
                 <Stack direction="row" sx={{overflowX: "auto"}}> {/* Copilot generated - BEGIN*/}
     {(inputErrors).map((error, index) => (
         <Button key={index + "button"} fullWidth sx={{ borderRadius: "20px" }} style={{ background: "#FFF8E6", display: "flex", flexDirection: "row", textTransform: "none", color: "black", marginRight: "10px", alignItems: "flex-start", width: "150px", flexShrink: 0 }}>
-            <Box key={index + "box"} sx={{  flexDirection: "row", alignItems: "stretch", width: "100%" }}>
+            <Box key={index + "box"} sx={{  flexDirection: "row", alignItems: "stretch", width: "100%", overflowX: "wrap", wordBreak: "break-word" }}>
                 {error.type === "codeQualityIssue" ? codeQualityIssue : (error.type === "moderateIssue" ? moderateIssue : majorIssue)}
                 <Typography sx={{lineHeight: "16px", marginBottom: "10px"}} key={index + "title"}>{error.title}</Typography>
                 <Typography sx={{lineHeight: "14px", marginBottom: "5px", fontSize: "12px"}} key={index + "description"}>{error.description}</Typography>

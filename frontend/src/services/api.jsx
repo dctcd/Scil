@@ -117,7 +117,7 @@ export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab
                 // response.data = code;
                 response.data.code = code;
                 setProject(response.data);
-                setTab("Home");
+                setTab("Code");
                 setAddCodeVisibility(false);
                 if (!availableProjects.includes(response.data.codeTitle)) {
                     var addTitle = [response.data.codeTitle];
@@ -148,7 +148,7 @@ export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setPr
             .then(response => {
                 // response.data = code;
                 setProject(response.data);
-                setTab("Home");
+                setTab("Code");
                 setAddCodeVisibility(false);
                 var index = 1;
                 if (availableProjects.includes(title)) {

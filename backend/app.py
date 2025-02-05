@@ -27,10 +27,12 @@ CODEBASE_PROMPT = ("Analyse the code in each of the files provided by the user, 
                    "maximum of 50 for each. Do not return anything under any file where code is completely perfect and"
                    "clear of errors.")
 
+
 class IssueType(str, Enum):
     majorIssue = "majorIssue"
     moderateIssue = "moderateIssue"
     codeQualityIssue = "codeQualityIssue"
+
 
 class Issue(BaseModel):
     title: str = Field(description="Describe the issue in less than 5 words")
@@ -39,12 +41,14 @@ class Issue(BaseModel):
     severity: float = Field(description="Float between 0 and 1 indicating the severity of the code issue")
     lineNumbers: list[int] = Field(description="Give any line numbers where the issue is found")
 
+
 class CodeAnalysis(BaseModel):
     codeTitle: str = Field(description="Give the code a title in less than 5 words describing the content.")
     issuesSummaryTitle: str = Field(description="Describe the status of the code considering the errors found in the "
                                                 "form of a title in less than 8 words")
     issuesSummary: str = Field(description="Give summary of the issues found in the code in 20 words or less.")
     issues: list[Issue] = Field(description="A list of issues found in the code")
+
 
 def analyse_code(client, prompt, code, response_format):
     completion = client.beta.chat.completions.parse(
@@ -58,16 +62,20 @@ def analyse_code(client, prompt, code, response_format):
     )
     return completion.choices[0].message.content
 
+
 def analyse_single_file(client, code):
     return analyse_code(client, SINGLE_FILE_PROMPT, code, CodeAnalysis)
 
+
 class PackException(Exception):
     pass
+
 
 def get_directory_structure(packed_codebase):
     filepaths = findall("<file path=\"(.*)\">\n", packed_codebase)
     print(filepaths)
     return filepaths
+
 
 def pack_codebase(command):
     print(subprocess.check_output(command))
@@ -78,8 +86,9 @@ def pack_codebase(command):
     directory_structure = get_directory_structure(packed_codebase)
     if not directory_structure:
         raise PackException("No files in specified directory")
-    os.remove("out.xml") # Delete packed codebase
+    os.remove("out.xml")  # Delete packed codebase
     return packed_codebase, directory_structure
+
 
 def analyse_multiple_files(client, command):
     packed_codebase, directory_structure = pack_codebase(command)
@@ -87,8 +96,8 @@ def analyse_multiple_files(client, command):
     print(directory_structure)
 
     class FileAnalysis(BaseModel):
-        filepath: list[Enum("FilePath", {item: item for item in directory_structure})] =(
-            Field(description="Filepath of the code in question")) # ChatGPT generated `item: item for item`
+        filepath: list[Enum("FilePath", {item: item for item in directory_structure})] = (
+            Field(description="Filepath of the code in question"))  # ChatGPT generated `item: item for item`
         issues: list[Issue] = Field(description="List of code issues within the file at the given filepath")
 
     class CodebaseAnalysis(BaseModel):
@@ -102,15 +111,22 @@ def analyse_multiple_files(client, command):
     code_analysis = analyse_code(client, CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis)
     return json.loads(code_analysis)
 
+
 def analyse_local_codebase(client, path):
-    return analyse_multiple_files(client, ['repomix', path, '--output', 'out.xml', '--output-show-line-numbers', '--no-security-check', '--style', 'xml',
-         '--ignore', '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
+    return analyse_multiple_files(client, ['repomix', path, '--output', 'out.xml', '--output-show-line-numbers',
+                                           '--no-security-check', '--style', 'xml',
+                                           '--ignore',
+                                           '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
+
 
 def analyse_remote_codebase(client, url, project_number):
-    json_analysis = analyse_multiple_files(client, ['repomix', '--remote', url, '--output', 'out.xml', '--output-show-line-numbers', '--no-security-check', '--style', 'xml',
-         '--ignore', '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
+    json_analysis = analyse_multiple_files(client, ['repomix', '--remote', url, '--output', 'out.xml',
+                                                    '--output-show-line-numbers', '--no-security-check', '--style',
+                                                    'xml',
+                                                    '--ignore',
+                                                    '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
     for file in json_analysis.get("files"):
-        filepath = file["filepath"][0].replace("/","%2F")
+        filepath = file["filepath"][0].replace("/", "%2F")
         code = requests.get(
             "https://gitlab.scss.tcd.ie/api/v4/projects/{}/repository/files/{}/raw"
             "?private_token={}&per_page=100&membership=true&ref=main"
@@ -118,12 +134,29 @@ def analyse_remote_codebase(client, url, project_number):
         file["code"] = code.text
     return json_analysis
 
+
 def check_openai(openai_api_key):
     if not openai_api_key:
         return False, "No key provided"
     if not openai_api_key.startswith("sk-"):
         return False, "Invalid key"
     return True, ""
+
+
+def set_cache(source, name, json):
+    pickle_db = open(f'pkl/{source}_{name}', 'ab')
+    pickle.dump(json, pickle_db)
+    pickle_db.close()
+
+
+def get_cache(source, name):
+    try:
+        pickle_db = open(f'pkl/{source}_{name}', 'rb')
+    except OSError:
+        return None
+    json = pickle.load(pickle_db)
+    pickle_db.close()
+    return json
 
 if __name__ == "__main__":
     load_dotenv(".env")
@@ -136,6 +169,7 @@ if __name__ == "__main__":
 
     # Enable Cross Origin to prevent errors regarding frontend origins
     CORS(app)
+
 
     @app.route('/analyse', methods=['POST'])
     @cross_origin()
@@ -161,14 +195,18 @@ if __name__ == "__main__":
         url = data.get('url')
         project_number = data.get('number')
         try:
+            cache = get_cache("gitlab", project_number)
+            if not cache is None:
+                return cache, 200
             json_string = analyse_remote_codebase(openai_client, url, project_number)
         except json.JSONDecodeError as e:
             print(e)
             return {"error": "Invalid JSON"}, 400
         except Exception as e:
             return {"error": "Internal Server Error"}, 500
-
+        set_cache("gitlab", project_number, json_string)
         return json_string, 200
+
 
     @app.route('/getRepositories', methods=['GET'])
     @cross_origin()
@@ -191,7 +229,8 @@ if __name__ == "__main__":
             return {"error": "Internal Server Error"}, 500
         json_trimmed = []
         for repository in parsed_json:
-            json_trimmed.append({"name": repository["name"], "id": repository["id"], "url": repository["http_url_to_repo"]})
+            json_trimmed.append(
+                {"name": repository["name"], "id": repository["id"], "url": repository["http_url_to_repo"]})
         return json_trimmed, 200
 
 
@@ -232,6 +271,7 @@ if __name__ == "__main__":
             return {}, 200
         return {"error": reason}, 400
 
+
     # Checks if the user is authenticated for GitLab and OpenAI API
     @app.route('/getAuthenticationStatus', methods=['GET'])
     @cross_origin()
@@ -245,9 +285,11 @@ if __name__ == "__main__":
         if response.status_code != 200:
             return {"gitlabAuthenticated": False, "openaiAuthenticated": openai_authenticated}, 200
         parsed_json = json.loads(response.content)
-        return {"gitlabAuthenticated": True, "openaiAuthenticated": openai_authenticated, "avatar_url" : parsed_json["avatar_url"], "name" : parsed_json["name"], "username" : parsed_json["username"]}, 200
+        return {"gitlabAuthenticated": True, "openaiAuthenticated": openai_authenticated,
+                "avatar_url": parsed_json["avatar_url"], "name": parsed_json["name"],
+                "username": parsed_json["username"]}, 200
+
 
     app.run(port=5000)
-
 
 # repomix --remote [REPO_HERE] --output out.xml --output-show-line-numbers --no-security-check --style xml --ignore **/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env

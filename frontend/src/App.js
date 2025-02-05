@@ -1,6 +1,7 @@
 import {Box, Drawer, Hidden, Stack, useTheme} from "@mui/material";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import Code from "./Code";
 import Home from "./Home";
 import Project from "./Project";
 
@@ -20,8 +21,8 @@ function App() {
     const [sidebarOpen, setSidebarOpen] = React.useState(window.innerWidth >= theme.breakpoints.values.md);
     const [tab, setTab] = React.useState("Home");
     // TEMP - BEGIN
-        var projectDefault = JSON.parse("{\"codeTitle\" : [\"path/title\"], \"issuesSummaryTitle\" : \"Issues Title\", \"issuesSummary\" : \"Issues Summary\", \"code\" : \"Code\", \"issues\" : [{\"title\" : \"title\", \"description\" : \"description\", \"type\" : \"codeQualityIssue\", \"severity\" : 0.3, \"lineNumbers\" : [1]}]}");
-
+    //     var projectDefault = JSON.parse("{\"codeTitle\" : [\"path/title\"], \"issuesSummaryTitle\" : \"Issues Title\", \"issuesSummary\" : \"Issues Summary\", \"code\" : \"Code\", \"issues\" : [{\"title\" : \"title\", \"description\" : \"description\", \"type\" : \"codeQualityIssue\", \"severity\" : 0.3, \"lineNumbers\" : [1]}]}");
+        var projectDefault = {};
     // TEMP - END
 
     const [project, setProject] = React.useState(projectDefault);
@@ -77,7 +78,8 @@ function App() {
                                     </Hidden>
                                     <Stack flexGrow={1} flexDirection="column">
                                         <Header title={tab}/>
-                                        {tab === "Home" && <Home project={project}/>}
+                                        {(tab === "Home" || tab === "About") && <Home/>}
+                                        {tab === "Code" && <Code project={project}/>}
                                         {tab === "Project" && <Project />}
                                     </Stack>
                                 </Stack>
