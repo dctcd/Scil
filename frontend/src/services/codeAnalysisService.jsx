@@ -49,3 +49,71 @@ export const lineContainsIssue = (lineNo, issues) => {
     }
     return false;
 }
+
+export const formatTimestamp = (timestamp) => {
+    let now = new Date();
+    let year = Number(timestamp.substring(0,4));
+    let month = Number(timestamp.substring(5,7));
+    let date = Number(timestamp.substring(8,10));
+    let hour = timestamp.substring(11,13);
+    let minute = timestamp.substring(14,16);
+    if (date === now.getDate() && month === now.getMonth() && year === now.getFullYear()) {
+        return hour + ":" + minute;
+    }
+    else if (year === now.getFullYear()) {
+        return hour + ":" + minute + " " + date + " " + getMonthString(month);
+    }
+    return hour + ":" + minute + " " + date + " " + getMonthString(month) + " " + year;
+    // if (time.getDate() === time.getDate()) {
+    //     return String(time.getTime());
+    // }
+    // else if (time.getFullYear() === time.getFullYear()) {
+    //     return String(timestamp.substring(11,15) + " " + timestamp.substring(5, 6) + " " + getMonthString(Number(timestamp.substring(5, 6))));
+    // }
+    // else {
+    //     return String(timestamp.substring(11,15) + " " + timestamp.substring(5, 6) + " " + getMonthString(Number(timestamp.substring(5, 6))) + " " + timestamp.substring(0, 3));
+    // }
+}
+
+export const getMonthString = (monthNo) => {
+    switch (monthNo) {
+        case 1:
+            return "Jan";
+        case 2:
+            return "Feb";
+        case 3:
+            return "Mar";
+        case 4:
+            return "Apr";
+        case 5:
+            return "May";
+        case 6:
+            return "Jun";
+        case 7:
+            return "Jul";
+        case 8:
+            return "Aug";
+        case 9:
+            return "Sep";
+        case 10:
+            return "Oct";
+        case 11:
+            return "Nov";
+        case 12:
+            return "Dec";
+    }
+}
+
+export const moveSingleAnalysisProjectToTop = (projects, project, setProjects, setProject) => {
+    setProject(project["project"])
+    function isNotMatch (projectMatch) {
+        if (projectMatch.hasOwnProperty("project")) {
+            if (projectMatch["project"] === project["project"]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    setProjects([{"name" : project["name"], "project": project["project"]}].concat(projects.filter(isNotMatch)));
+}

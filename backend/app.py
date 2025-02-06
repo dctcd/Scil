@@ -4,6 +4,7 @@ import subprocess
 import pickle
 
 import dotenv
+import openai
 import requests
 from enum import Enum
 
@@ -50,9 +51,9 @@ class CodeAnalysis(BaseModel):
     issues: list[Issue] = Field(description="A list of issues found in the code")
 
 
-def analyse_code(client, prompt, code, response_format):
+def analyse_code(client, model, prompt, code, response_format):
     completion = client.beta.chat.completions.parse(
-        model="gpt-4o",
+        model=model,
         store=True,
         messages=[
             {"role": "system", "content": prompt},
@@ -64,7 +65,7 @@ def analyse_code(client, prompt, code, response_format):
 
 
 def analyse_single_file(client, code):
-    return analyse_code(client, SINGLE_FILE_PROMPT, code, CodeAnalysis)
+    return analyse_code(client, "gpt-4o", SINGLE_FILE_PROMPT, code, CodeAnalysis)
 
 
 class PackException(Exception):
@@ -108,8 +109,16 @@ def analyse_multiple_files(client, command):
 
         files: list[FileAnalysis]
 
-    code_analysis = analyse_code(client, CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis)
-    return json.loads(code_analysis)
+    try:
+        code_analysis = analyse_code(client, "gpt-4o", CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis)
+        analysis_json = json.loads(code_analysis)
+        analysis_json["source"] = "GPT 4o"
+        return analysis_json
+    except openai.RateLimitError:
+        code_analysis = analyse_code(client, "gpt-4o-mini", CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis)
+        analysis_json = json.loads(code_analysis)
+        analysis_json["source"] = "GPT 4o mini"
+        return analysis_json
 
 
 def analyse_local_codebase(client, path):
@@ -132,6 +141,10 @@ def analyse_remote_codebase(client, url, project_number):
             "?private_token={}&per_page=100&membership=true&ref=main"
             .format(project_number, filepath, os.environ.get("GITLAB_API_KEY")))
         file["code"] = code.text
+    commits = requests.get(
+        "https://gitlab.scss.tcd.ie/api/v4/projects/{}/repository/commits?private_token={}&per_page=100&membership=true&ref=main"
+        .format(project_number, os.environ.get("GITLAB_API_KEY")))
+    json_analysis["commits"] = json.loads(commits.content)
     return json_analysis
 
 
@@ -157,6 +170,39 @@ def get_cache(source, name):
     json = pickle.load(pickle_db)
     pickle_db.close()
     return json
+
+
+def get_cached_repositories_list():
+    try:
+        pickle_db = open(f'pkl/list', 'rb')
+    except OSError:  # if the list does not exist, pickle an empty array
+        new_pickle_db = open(f'pkl/list', 'wb')
+        empty_pickle = json.loads("[]")
+        pickle.dump(empty_pickle, new_pickle_db)
+        new_pickle_db.close()
+        raise Exception("Could not find list of cached repositories, created one")
+    list = pickle.load(pickle_db)
+    pickle_db.close()
+    return json.loads(str(list).replace("'", '"'))
+
+
+def add_to_cached_repositories_list(json_to_add):
+    try:
+        pickle_db = open(f'pkl/list', 'rb')
+    except OSError:  # if the list does not exist, pickle an empty array
+        new_pickle_db = open(f'pkl/list', 'wb')
+        empty_pickle = json.loads("[]")
+        pickle.dump(empty_pickle, new_pickle_db)
+        new_pickle_db.close()
+        raise Exception("Could not find list of cached repositories, created one")
+    list = pickle.load(pickle_db)
+    pickle_db.close()
+    json_list = json.loads(str(list).replace("'", '"'))
+    json_list.append(json_to_add)
+    updated_pickle_db = open(f'pkl/list', 'wb')
+    pickle.dump(json_list, updated_pickle_db)
+    updated_pickle_db.close()
+
 
 if __name__ == "__main__":
     load_dotenv(".env")
@@ -193,10 +239,12 @@ if __name__ == "__main__":
     def analyse_remote_repository():
         data = request.json
         url = data.get('url')
+        title = data.get('title')
         project_number = data.get('number')
         try:
             cache = get_cache("gitlab", project_number)
             if not cache is None:
+                cache["source"] = "Cached – " + cache["source"]
                 return cache, 200
             json_string = analyse_remote_codebase(openai_client, url, project_number)
         except json.JSONDecodeError as e:
@@ -205,6 +253,7 @@ if __name__ == "__main__":
         except Exception as e:
             return {"error": "Internal Server Error"}, 500
         set_cache("gitlab", project_number, json_string)
+        add_to_cached_repositories_list({"name": title, "number": project_number})
         return json_string, 200
 
 
@@ -288,6 +337,16 @@ if __name__ == "__main__":
         return {"gitlabAuthenticated": True, "openaiAuthenticated": openai_authenticated,
                 "avatar_url": parsed_json["avatar_url"], "name": parsed_json["name"],
                 "username": parsed_json["username"]}, 200
+
+
+    @app.route('/getCachedRepositories', methods=['GET'])
+    @cross_origin()
+    def get_cached_repositories():
+        try:
+            cached_repositories = get_cached_repositories_list()
+            return cached_repositories, 200
+        except Exception:
+            return {"error": "No cached repositories!"}, 500
 
 
     app.run(port=5000)

@@ -120,7 +120,7 @@ export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab
                 setTab("Code");
                 setAddCodeVisibility(false);
                 if (!availableProjects.includes(response.data.codeTitle)) {
-                    var addTitle = [response.data.codeTitle];
+                    var addTitle = [{"name" : response.data.codeTitle, "project" : response.data}];
                     setAvailableProjects(addTitle.concat(availableProjects));
                 }
                 setLoadingVisible(false);
@@ -143,6 +143,7 @@ export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setPr
                 'Content-Type': 'application/json',
             },
             url: url,
+            title: title,
             number: projectNumber
         })
             .then(response => {
@@ -150,21 +151,33 @@ export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setPr
                 setProject(response.data);
                 setTab("Code");
                 setAddCodeVisibility(false);
-                var index = 1;
-                if (availableProjects.includes(title)) {
-                    while (true) {
-                        if (availableProjects.includes(title + " " + index)) {
-                            index++;
-                        }
-                        else {
-                            setAvailableProjects([title + " " + index].concat(availableProjects));
-                            break;
+                // var index = 1;
+                // if (availableProjects.includes(title)) {
+                //     while (true) {
+                //         if (availableProjects.includes(title + " " + index)) {
+                //             index++;
+                //         }
+                //         else {
+                //             setAvailableProjects([title + " " + index].concat(availableProjects));
+                //             break;
+                //         }
+                //     }
+                // }
+                // else {
+
+                function isNotMatch (projectMatch) {
+                    if (projectMatch.hasOwnProperty("number")) {
+                        if (projectMatch.number === projectNumber) {
+                            return false;
                         }
                     }
+                    return true;
                 }
-                else {
-                     setAvailableProjects([title].concat(availableProjects));
-                }
+
+                availableProjects = availableProjects.filter(isNotMatch);
+                // else {
+                    setAvailableProjects([{"name" : title, "number": projectNumber}].concat(availableProjects));
+                // }
                 setLoadingVisible(false);
                 return response.data;
             })

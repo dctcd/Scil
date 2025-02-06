@@ -22,6 +22,7 @@ import 'prismjs/components/prism-javascript';
 import 'prismjs/themes/prism.css';
 import userImage from "./resources/User.svg";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
+import {moveSingleAnalysisProjectToTop} from "./services/codeAnalysisService";
 
 
 
@@ -90,7 +91,7 @@ const Sidebar = () => {
                     <Typography variant="h5" sx={{marginLeft: "10px"}}>Scil</Typography>
                 </Box>
                 <NavDropdown
-                    title={<span style={{display: "inline-block",overflow:"hidden", whiteSpace:"nowrap", textOverflow: "ellipsis", maxWidth: "120px", marginLeft: "10px", marginRight: "2px"}}>{availableProjects.length >0 ? availableProjects[0] : "New Project"}</span>}
+                    title={<span style={{display: "inline-block",overflow:"hidden", whiteSpace:"nowrap", textOverflow: "ellipsis", maxWidth: "120px", marginLeft: "10px", marginRight: "2px"}}>{availableProjects.length >0 ? availableProjects[0].name : "New Project"}</span>}
 
                 >
 
@@ -98,13 +99,16 @@ const Sidebar = () => {
 
                     {availableProjects.map((project, index) => (
                 <>
-                    <NavDropdown.Item href="#action/3.3"><span style={{
+                    <NavDropdown.Item
+                        onClick={() => project.hasOwnProperty("project") ? moveSingleAnalysisProjectToTop(availableProjects, project, setAvailableProjects, setProject) :  getRemoteCodebaseAnalysis("", project.number, project.name, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects, setLoadingVisible)}
+                        // href={"#"+project.number} TODO add url support
+                    ><span style={{
                         display: "inline-block",
                         overflow: "hidden",
                         whiteSpace: "nowrap",
                         textOverflow: "ellipsis",
                         maxWidth: "125px"
-                    }}>{project}</span></NavDropdown.Item>
+                    }}>{project.name}</span></NavDropdown.Item>
                 </>
             ))}
 

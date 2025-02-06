@@ -69,7 +69,7 @@ const Header = ({title}) => {
                         justifyItems: 'flex-start'
                     }}
                             disableElevation size="large">
-                        {(username) && (<Stack direction="row">
+                        {(username) && (<Stack direction="row" style={{alignItems: "center"}}>
                             <img src={image} height={35} alt="User" style={{paddingRight: "5px", borderRadius: 17.5}} />
                             <Stack direction="column">
                                 <Typography variant="subtitle2" margin={0}>{name}</Typography>

@@ -180,7 +180,8 @@ const Content = ({inputErrors, title, headline, description, code}) => {
                         paddingBottom : (index === ((code.split("\n")).length-1)) ? "10px" : 0,
                         borderTopRightRadius : (index === 0 ? "15px" : "0px"),
                         borderBottomRightRadius : ((index === ((code.split("\n")).length-1)) ? "15px" : "0px"),
-                        backgroundColor : getLineHighlight(index+1, inputErrors, false)
+                        backgroundColor : getLineHighlight(index+1, inputErrors, false),
+                        overflowX: "wrap", wordBreak: "break-word"
                     }}>
                         <code>{highlightAndFormatWhitespace(line, "js")}</code>
 
