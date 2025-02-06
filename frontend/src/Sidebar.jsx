@@ -1,5 +1,11 @@
-import React, {useContext} from 'react'
-import {getAnalysis, getRemoteCodebaseAnalysis, getRepositories} from "./services/api";
+import React, {useContext, useEffect} from 'react'
+import {
+    getAnalysis,
+    getAuthenticationStatus,
+    getCachedRepositories,
+    getRemoteCodebaseAnalysis,
+    getRepositories
+} from "./services/api";
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import CodeOutlinedIcon from '@mui/icons-material/CodeOutlined';
@@ -74,6 +80,10 @@ const Sidebar = () => {
     const [repositories, setRepositories] = React.useState([]);
     const [gitlabError, setGitlabError] = React.useState("");
     const {gitlabAuthenticated, setGitlabAuthenticated} = useContext(GitlabContext);
+
+    useEffect(() => {
+        getCachedRepositories(setAvailableProjects, setProject, setTab);
+    }, []);
 
     const setCodeInputAndLineNumber = (codeInput) => {
         setCodeInput(codeInput);

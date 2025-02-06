@@ -142,7 +142,7 @@ def analyse_remote_codebase(client, url, project_number):
             .format(project_number, filepath, os.environ.get("GITLAB_API_KEY")))
         file["code"] = code.text
     commits = requests.get(
-        "https://gitlab.scss.tcd.ie/api/v4/projects/{}/repository/commits?private_token={}&per_page=100&membership=true&ref=main"
+        "https://gitlab.scss.tcd.ie/api/v4/projects/{}/repository/commits?private_token={}&per_page=100&ref=main"
         .format(project_number, os.environ.get("GITLAB_API_KEY")))
     json_analysis["commits"] = json.loads(commits.content)
     return json_analysis
@@ -175,33 +175,36 @@ def get_cache(source, name):
 def get_cached_repositories_list():
     try:
         pickle_db = open(f'pkl/list', 'rb')
+        list = pickle.load(pickle_db)
+        pickle_db.close()
+        return json.loads(str(list).replace("'", '"'))
     except OSError:  # if the list does not exist, pickle an empty array
         new_pickle_db = open(f'pkl/list', 'wb')
         empty_pickle = json.loads("[]")
         pickle.dump(empty_pickle, new_pickle_db)
         new_pickle_db.close()
-        raise Exception("Could not find list of cached repositories, created one")
-    list = pickle.load(pickle_db)
-    pickle_db.close()
-    return json.loads(str(list).replace("'", '"'))
+        return json.loads("[]")
+
 
 
 def add_to_cached_repositories_list(json_to_add):
     try:
         pickle_db = open(f'pkl/list', 'rb')
+        list = pickle.load(pickle_db)
+        pickle_db.close()
+        json_list = json.loads(str(list).replace("'", '"'))
+        json_list.append(json_to_add)
+        updated_pickle_db = open(f'pkl/list', 'wb')
+        pickle.dump(json_list, updated_pickle_db)
+        updated_pickle_db.close()
     except OSError:  # if the list does not exist, pickle an empty array
         new_pickle_db = open(f'pkl/list', 'wb')
         empty_pickle = json.loads("[]")
+        empty_pickle.append(json_to_add)
         pickle.dump(empty_pickle, new_pickle_db)
         new_pickle_db.close()
-        raise Exception("Could not find list of cached repositories, created one")
-    list = pickle.load(pickle_db)
-    pickle_db.close()
-    json_list = json.loads(str(list).replace("'", '"'))
-    json_list.append(json_to_add)
-    updated_pickle_db = open(f'pkl/list', 'wb')
-    pickle.dump(json_list, updated_pickle_db)
-    updated_pickle_db.close()
+        # raise Exception("Could not find list of cached repositories, created one")
+
 
 
 if __name__ == "__main__":

@@ -53,7 +53,7 @@ const Commits = ({commits}) => {
                             <img src={userImage} height={35} alt="User"
                                  style={{marginRight: "10px"}}/>
                             <Box sx={{display: "flex", flexDirection: "column"}}>
-                                <Typography variant="caption">{new Date().toDateString()}</Typography>
+                                <Typography variant="caption">{new Date().toTimeString().substring(0,5)}</Typography>
                                 {/*<Typography variant="caption">{commit.authored_date}</Typography>*/}
                                 <Typography>You</Typography>
                             </Box>

@@ -44,11 +44,11 @@ const Code = ({project}) => {
                                     lineHeight: "16px",
                                     marginBottom: "15px"
                                 }}>{project.issuesSummary}</Typography>
-                                <Button startIcon={<SyncIcon/>} type="submit" variant="outlined" sx={refreshButton()}
+                                {(project.hasOwnProperty("commits")) && (project.commits && (<Button startIcon={<SyncIcon/>} type="submit" variant="outlined" sx={refreshButton()}
                                         disableElevation size="large" onClick={() => {
                                 }}>
                                     <Typography variant="body1">Refresh</Typography>
-                                </Button>
+                                </Button>))}
                             </Stack>
                             <img src={scilLogo} style={{height: "150px", margin: "70px"}} alt="Scil"/>
                         </Stack>

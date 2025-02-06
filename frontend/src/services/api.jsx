@@ -205,3 +205,22 @@ export const getAuthenticationStatus = async (setGitlabAuthenticated, setOpenaiK
             }
         });
 }
+
+export const getCachedRepositories = async (setAvailableProjects, setProject, setTab) => {
+    process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
+    await instance.get('/getCachedRepositories')
+        .then(response => {
+            if (response.status === 200) {
+
+                setAvailableProjects(response.data);
+                alert(JSON.stringify(response.data))
+                if (response.data) {
+                    if (response.data.length > 0) {
+                        getRemoteCodebaseAnalysis("", response.data[0].number, response.data[0].name, setProject,
+                            () => {}, setTab, [], () => {},
+                            () => {})
+                    }
+                }
+                } //hi
+        });
+}
