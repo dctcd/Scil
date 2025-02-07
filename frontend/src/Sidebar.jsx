@@ -292,6 +292,9 @@ const Sidebar = () => {
                                     </Box>
                             </Stack>
                             </Box>
+                                <Typography variant="caption" style={{ overflowX: "wrap", wordBreak: "break-word", width: "100%", paddingTop: "10px", textAlign: "center", paddingLeft: "10px", paddingRight: "10px"}}>
+                                    Ensure code does not include personally identifiable information
+                                </Typography>
                             <Button style={{margin:"12px"}} startIcon={<AddIcon/>} type="submit" variant="outlined" sx={loginButton()}
                                     disableElevation size="large" onClick={() => {
                                         setLoadingVisible(true);
@@ -315,6 +318,9 @@ const Sidebar = () => {
                                 </Button>
                                     ))}
                                 </Box>
+                                <Typography variant="caption" style={{ overflowX: "wrap", wordBreak: "break-word", width: "100%", paddingBottom: "15px", textAlign: "center", paddingLeft: "10px", paddingRight: "10px"}}>
+                                    Ensure codebase does not include personally identifiable information
+                                </Typography>
                             </>)}
 
                             {(submitType !== "") && (<>
