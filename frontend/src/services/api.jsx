@@ -1,7 +1,4 @@
 import axios from "axios";
-import {ProjectContext, TabContext, } from "../App";
-
-
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 const instance = axios.create({
@@ -12,7 +9,6 @@ const instance = axios.create({
 
 export const updateGitlab = async (token, setName, setUsername, setImage, setGitlabError, setGitlabAuthenticated) => {
     try {
-        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/updateGitlab', {
             headers: {
                 'Access-Control-Allow-Origin': 'https://localhost:5000',
@@ -21,7 +17,6 @@ export const updateGitlab = async (token, setName, setUsername, setImage, setGit
             'token': token
         })
             .then(response => {
-                // response.data = code;
                 if (response.status === 200) {
                     setName(response.data.name);
                     setUsername(response.data.username);
@@ -51,7 +46,6 @@ export const updateGitlab = async (token, setName, setUsername, setImage, setGit
 
 export const getRepositories = async (setRepositories, setGitlabError) => {
     try {
-        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.get('/getRepositories', {
             headers: {
                 'Access-Control-Allow-Origin': 'https://localhost:5000'
@@ -75,7 +69,6 @@ export const getRepositories = async (setRepositories, setGitlabError) => {
 
 export const updateOpenai = async (key, setOpenaiError, setOpenaiKeySetup) => {
     try {
-        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/updateOpenai', {
             headers: {
                 'Access-Control-Allow-Origin': 'https://localhost:5000',
@@ -108,7 +101,6 @@ export const updateOpenai = async (key, setOpenaiError, setOpenaiKeySetup) => {
 
 export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects, setLoadingVisible) => {
     try {
-        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/analyse', {
             headers: {
                 'Access-Control-Allow-Origin': 'https://localhost:5000',
@@ -139,7 +131,6 @@ export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab
 
 export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setProject, setAddCodeVisibility, setTab, availableProjects, setAvailableProjects, setLoadingVisible) => {
     try {
-        process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/analyseRemoteRepository', {
             headers: {
                 'Access-Control-Allow-Origin': 'https://localhost:5000',
@@ -150,24 +141,9 @@ export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setPr
             number: projectNumber
         })
             .then(response => {
-                // response.data = code;
                 setProject(response.data);
                 setTab("Code");
                 setAddCodeVisibility(false);
-                // var index = 1;
-                // if (availableProjects.includes(title)) {
-                //     while (true) {
-                //         if (availableProjects.includes(title + " " + index)) {
-                //             index++;
-                //         }
-                //         else {
-                //             setAvailableProjects([title + " " + index].concat(availableProjects));
-                //             break;
-                //         }
-                //     }
-                // }
-                // else {
-
                 function isNotMatch (projectMatch) {
                     if (projectMatch.hasOwnProperty("number")) {
                         if (projectMatch.number === projectNumber) {
@@ -176,11 +152,8 @@ export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setPr
                     }
                     return true;
                 }
-
                 availableProjects = availableProjects.filter(isNotMatch);
-                // else {
-                    setAvailableProjects([{"name" : title, "number": projectNumber}].concat(availableProjects));
-                // }
+                setAvailableProjects([{"name" : title, "number": projectNumber}].concat(availableProjects));
                 setLoadingVisible(false);
                 return response.data;
             })
@@ -220,7 +193,6 @@ export const getCachedRepositories = async (setAvailableProjects, setProject, se
             }})
         .then(response => {
             if (response.status === 200) {
-
                 setAvailableProjects(response.data);
                 if (response.data) {
                     if (response.data.length > 0) {
@@ -229,6 +201,6 @@ export const getCachedRepositories = async (setAvailableProjects, setProject, se
                             () => {})
                     }
                 }
-                } //hi
+            }
         });
 }

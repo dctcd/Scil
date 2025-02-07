@@ -11,14 +11,12 @@ from enum import Enum
 from dotenv import load_dotenv
 from re import findall
 
-from flask import Flask, request, jsonify
-from flask_cors import CORS, cross_origin
+from flask import Flask, request
+from flask_cors import cross_origin
 from flask_socketio import SocketIO
-from flask_sslify import SSLify
 from pydantic import BaseModel, Field
 from openai import OpenAI
 
-from numpy import concatenate
 
 SINGLE_FILE_PROMPT = ("Analyse the code provided by the user, giving the response in a json, identifying all major, "
                       "moderate and code quality issues, giving a title, description and severity for each, noting the "
@@ -192,9 +190,9 @@ def get_cached_repositories_list():
 def add_to_cached_repositories_list(json_to_add):
     try:
         pickle_db = open(f'pkl/list', 'rb')
-        list = pickle.load(pickle_db)
+        repositories_list = pickle.load(pickle_db)
         pickle_db.close()
-        json_list = json.loads(str(list).replace("'", '"'))
+        json_list = json.loads(str(repositories_list).replace("'", '"'))
         json_list.append(json_to_add)
         updated_pickle_db = open(f'pkl/list', 'wb')
         pickle.dump(json_list, updated_pickle_db)
@@ -205,8 +203,6 @@ def add_to_cached_repositories_list(json_to_add):
         empty_pickle.append(json_to_add)
         pickle.dump(empty_pickle, new_pickle_db)
         new_pickle_db.close()
-        # raise Exception("Could not find list of cached repositories, created one")
-
 
 
 if __name__ == "__main__":
@@ -357,5 +353,3 @@ if __name__ == "__main__":
             return {"error": "No cached repositories!"}, 500
 
     app.run(port=5000, ssl_context=("../certs/localhost.pem", "../certs/localhost-key.pem"))
-
-# repomix --remote [REPO_HERE] --output out.xml --output-show-line-numbers --no-security-check --style xml --ignore **/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env

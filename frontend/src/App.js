@@ -3,10 +3,8 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Code from "./Code";
 import Home from "./Home";
-import Project from "./Project";
 
 import React, {useEffect, createContext} from "react";
-import axios from "axios";
 
 export const SidebarContext = createContext(false);
 export const TabContext = createContext("Home");
@@ -18,23 +16,20 @@ export const GitlabContext = createContext(false);
 
 function App() {
     const theme = useTheme();
-    const [sidebarOpen, setSidebarOpen] = React.useState(window.innerWidth >= theme.breakpoints.values.md);
-    const [tab, setTab] = React.useState("Home");
-    // TEMP - BEGIN
-    //     var projectDefault = JSON.parse("{\"codeTitle\" : [\"path/title\"], \"issuesSummaryTitle\" : \"Issues Title\", \"issuesSummary\" : \"Issues Summary\", \"code\" : \"Code\", \"issues\" : [{\"title\" : \"title\", \"description\" : \"description\", \"type\" : \"codeQualityIssue\", \"severity\" : 0.3, \"lineNumbers\" : [1]}]}");
-        var projectDefault = {};
-    // TEMP - END
-
-    const [project, setProject] = React.useState(projectDefault);
-    const [availableProjects, setAvailableProjects] = React.useState([]);
-    const [sidebarStyle, setSidebarStyle] = React.useState(window.innerWidth >= theme.breakpoints.values.md ? "persistent" : "temporary");
-    const [gitlabAuthenticated, setGitlabAuthenticated] = React.useState(false);
     const container = undefined;
+    const [tab, setTab] = React.useState("Home");
+    const [project, setProject] = React.useState({});
+    const [availableProjects, setAvailableProjects] = React.useState([]);
+    const [gitlabAuthenticated, setGitlabAuthenticated] = React.useState(false);
+    const [sidebarOpen, setSidebarOpen] = React.useState(
+        window.innerWidth >= theme.breakpoints.values.md
+    );
+    const [sidebarStyle, setSidebarStyle] = React.useState(
+        window.innerWidth >= theme.breakpoints.values.md ? "persistent" : "temporary"
+    );
     const handleDrawerToggle = () => {
         setSidebarOpen(!sidebarOpen);
     };
-
-
 
     const handleWindowSizeChange = () => {
         if (window.innerWidth >= theme.breakpoints.values.md) {
@@ -60,27 +55,18 @@ function App() {
                     <AvailableProjectsContext.Provider value={{availableProjects, setAvailableProjects}}>
                         <GitlabContext.Provider value={{gitlabAuthenticated, setGitlabAuthenticated}}>
                             <div>
-                                <Drawer
-                                    container={container}
-                                    variant={sidebarStyle}
-                                    anchor="left"
-                                    open={sidebarOpen}
-                                    onClose={handleDrawerToggle}
-                                    ModalProps={{
-                                        keepMounted: true
-                                    }}>
+                                <Drawer container={container} variant={sidebarStyle} anchor="left" open={sidebarOpen}
+                                    onClose={handleDrawerToggle} ModalProps={{keepMounted: true}}>
                                     <Sidebar/>
-
                                 </Drawer>
                                 <Stack direction="row">
-                                    <Hidden mdDown implementation="css">
+                                    <Hidden mdDown implementation="css"> {/* TODO replace deprecated Hidden */}
                                         <Box p={2} sx={{width: "165px"}}></Box>
                                     </Hidden>
                                     <Stack flexGrow={1} flexDirection="column">
                                         <Header title={tab}/>
                                         {(tab === "Home" || tab === "About") && <Home/>}
                                         {tab === "Code" && <Code project={project}/>}
-                                        {tab === "Project" && <Project />}
                                     </Stack>
                                 </Stack>
                             </div>

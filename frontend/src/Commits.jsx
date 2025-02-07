@@ -1,7 +1,6 @@
-import React, {useState} from 'react'
+import React from 'react'
 import {Box, Button, Stack, Typography} from "@mui/material";
 import userImage from "./resources/User.svg";
-import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import {countErrorsOfType, formatTimestamp, isErrorsOfType} from "./services/codeAnalysisService";
 
 const Commits = ({commits, files}) => {

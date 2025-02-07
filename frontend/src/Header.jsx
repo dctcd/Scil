@@ -49,93 +49,96 @@ const Header = ({title}) => {
 
                 <Box sx={{display: "flex", alignItems: "center", flex: 1, justifyContent: "flex-end"}}
                      direction="row">
-                    <Button onClick={() => {
-
-                                if (username) {
-                                    setGitlabPrivateKey("••••••••••••••••••••••••••");
-                                }
-                                if (openaiKeySetup) {
-                                    setOpenaiApiKey("••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
-                                }
-                                setUserDialogOpen(true);
-                    }} sx={{
-                        color: "black",
-                        backgroundColor: username ? "#FFF8E6" : "#FFDD85",
-                        textTransform: "none",
-                        padding: "5px",
-                        borderRadius: "15px",
-                        margin: 0,
-                        justifyContent: 'flex-start',
+                    <Button onClick={
+                        () => {
+                            if (username) {
+                                setGitlabPrivateKey("••••••••••••••••••••••••••");
+                            }
+                            if (openaiKeySetup) {
+                                setOpenaiApiKey("••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••");
+                            }
+                            setUserDialogOpen(true);
+                        }
+                    } sx={{
+                        color: "black", backgroundColor: username ? "#FFF8E6" : "#FFDD85", textTransform: "none",
+                        padding: "5px", borderRadius: "15px", margin: 0, justifyContent: 'flex-start',
                         justifyItems: 'flex-start'
-                    }}
-                            disableElevation size="large">
-                        {(username) && (<Stack direction="row" style={{alignItems: "center"}}>
-                            <img src={image} height={35} alt="User" style={{paddingRight: "5px", borderRadius: 17.5}} />
-                            <Stack direction="column">
-                                <Typography variant="subtitle2" margin={0}>{name}</Typography>
-                                <Typography variant="caption" margin={0}>{username}</Typography>
-                            </Stack>
-                        </Stack>)}
-                        {(!username) && (<>
-                            <img src={gitlabImage} height={35} alt="GitLab" style={{paddingRight: "5px", borderRadius: 17.5}}/>
-                            <Typography variant="subtitle1" margin={0} style={{paddingRight: "10px"}}>Login</Typography>
-                        </>)}
+                    }} disableElevation size="large">
+                        {
+                            (username) && (
+                                <Stack direction="row" style={{alignItems: "center"}}>
+                                    <img src={image} height={35} alt="User" style={{
+                                        paddingRight: "5px", borderRadius: 17.5
+                                    }}/>
+                                    <Stack direction="column">
+                                        <Typography variant="subtitle2" margin={0}>{name}</Typography>
+                                        <Typography variant="caption" margin={0}>{username}</Typography>
+                                    </Stack>
+                                </Stack>
+                            )
+                        }
+                        {
+                            (!username) && (
+                                <>
+                                    <img src={gitlabImage} height={35} alt="GitLab" style={{
+                                        paddingRight: "5px", borderRadius: 17.5
+                                    }}/>
+                                    <Typography variant="subtitle1" margin={0} style={{paddingRight: "10px"}}>
+                                        Login
+                                    </Typography>
+                                </>
+                            )
+                        }
                     </Button>
                 </Box>
-
             </Stack>
         </Hidden>
 
-        <Modal
-            open={userDialogOpen}
-            onClose={() => {
+        <Modal open={userDialogOpen} aria-labelledby="parent-modal-title-1" onClose={() => {
                 setUserDialogOpen(false);
                 setGitlabError("");
                 setOpenaiError("");
-            }}
-            aria-labelledby="parent-modal-title-1"
-            style={{display: "flex", alignItems: "center", justifyContent: "center"}}
-        >
+            }} style={{
+                display: "flex", alignItems: "center", justifyContent: "center"
+            }}>
             <Box variant="body1" color="black" bgcolor="#F8F8F8"
                  sx={{borderRadius: 4, marginBottom: 2, padding: "10px"}}>
                 <Stack>
-                    <Typography style={{margin: "12px"}} variant="h6" p={1}>Edit User Information</Typography>
+                    <Typography style={{margin: "12px"}} variant="h6" p={1}>
+                        Edit User Information
+                    </Typography>
                     <Stack direction="row" style={{width: "500px", maxWidth: "calc(100vw - 40px)"}}>
                         <TextField password fullWidth id="outlined-basic" label="GitLab Private Key" variant="outlined"
-                                   type="password" error={gitlabError === "Updated GitLab private token" ? false : (gitlabError !== "")}
-                                value={gitlabPrivateKey}
-                                   InputProps={{style: {borderRadius: 10}}}
-                               onChange={gitlabKeyInput =>
-                                   setGitlabPrivateKey(gitlabKeyInput.target.value)
-                               }
-                               />
-                        <Button type="submit" variant="outlined" sx={{
-                            display: 'flex',
-                            color: "black",
-                            borderRadius: 2.5,
-                            backgroundColor: "#F8F8F8",
-                            borderColor: "#BDBDBD",
-                            textTransform: "none",
-                            marginLeft: "10px",
-                            '&:hover': {borderColor: "#000000", backgroundColor: "#F0F0F0"}
-                        }}
-                                disabled={gitlabPrivateKey === "" || gitlabPrivateKey === "••••••••••••••••••••••••••"}
-                                disableElevation size="large" onClick={() => {
-                                    updateGitlab(gitlabPrivateKey, setName, setUsername, setImage, setGitlabError, setGitlabAuthenticated);
-                        }}>
-                            <Typography variant="body1">Update</Typography>
+                            type="password" value={gitlabPrivateKey} InputProps={{style: {borderRadius: 10}}}
+                            error={gitlabError === "Updated GitLab private token" ? false : (gitlabError !== "")}
+                            onChange={
+                                gitlabKeyInput => setGitlabPrivateKey(gitlabKeyInput.target.value)
+                            }
+                        />
+                        <Button type="submit" variant="outlined" sx={{display: 'flex', color: "black",
+                            borderRadius: 2.5, backgroundColor: "#F8F8F8", borderColor: "#BDBDBD", marginLeft: "10px",
+                            textTransform: "none", '&:hover': {borderColor: "#000000", backgroundColor: "#F0F0F0"}}}
+                            disabled={gitlabPrivateKey === "" || gitlabPrivateKey === "••••••••••••••••••••••••••"}
+                            disableElevation size="large" onClick={() => {
+                            updateGitlab(
+                                gitlabPrivateKey, setName, setUsername, setImage, setGitlabError,
+                                setGitlabAuthenticated);
+                            }
+                        }>
+                            <Typography variant="body1">
+                                Update
+                            </Typography>
                         </Button>
                     </Stack>
-                    <Typography color={gitlabError !== "Updated GitLab private token" ? "red": "black"}>{gitlabError}</Typography>
+                    <Typography color={gitlabError !== "Updated GitLab private token" ? "red": "black"}>
+                        {gitlabError}
+                    </Typography>
                     <Stack direction="row" style={{marginTop: "15px", width: "500px", maxWidth: "calc(100vw - 40px)"}}>
                         <TextField password fullWidth id="outlined-basic" label="OpenAI API Key" variant="outlined"
-                                   type="password"
-                               InputProps={{style: {borderRadius: 10}}}
-                                   value={openaiApiKey}
+                                   type="password" InputProps={{style: {borderRadius: 10}}} value={openaiApiKey}
                                onChange={openaiApiKeyInput =>
                                    setOpenaiApiKey(openaiApiKeyInput.target.value)
-                               }
-                                   error={openaiError === "Updated OpenAI API key" ? false : (openaiError === "" ? false : true)}
+                               } error={openaiError === "Updated OpenAI API key" ? false : (openaiError !== "")}
                                />
                         <Button type="submit" variant="outlined" sx={{
                             display: 'flex',
