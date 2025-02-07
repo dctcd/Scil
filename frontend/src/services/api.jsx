@@ -3,7 +3,7 @@ import axios from "axios";
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 const instance = axios.create({
     baseURL: 'https://localhost:5000',
-    timeout: 100000,
+    timeout: 0,
     rejectUnauthorized: false,
 });
 
