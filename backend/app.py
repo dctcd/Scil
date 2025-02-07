@@ -79,7 +79,7 @@ def get_directory_structure(packed_codebase):
 
 
 def pack_codebase(command):
-    print(subprocess.check_output(command))
+    print(subprocess.run(command, shell=True))
     if not os.path.isfile('out.xml'):
         raise PackException("Packed codebase file not found")
     file = open('out.xml', 'r')
@@ -87,7 +87,8 @@ def pack_codebase(command):
     directory_structure = get_directory_structure(packed_codebase)
     if not directory_structure:
         raise PackException("No files in specified directory")
-    os.remove("out.xml")  # Delete packed codebase
+    file.close()
+    os.remove(os.getcwd() + "\\out.xml")  # Delete packed codebase
     return packed_codebase, directory_structure
 
 
@@ -122,14 +123,14 @@ def analyse_multiple_files(client, command):
 
 
 def analyse_local_codebase(client, path):
-    return analyse_multiple_files(client, ['repomix', path, '--output', 'out.xml', '--output-show-line-numbers',
+    return analyse_multiple_files(client, ['npx', 'repomix', path, '--output', 'out.xml', '--output-show-line-numbers',
                                            '--no-security-check', '--style', 'xml',
                                            '--ignore',
                                            '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
 
 
 def analyse_remote_codebase(client, url, project_number):
-    json_analysis = analyse_multiple_files(client, ['repomix', '--remote', url, '--output', 'out.xml',
+    json_analysis = analyse_multiple_files(client, ['npx', 'repomix', '--remote', url, '--output', 'out.xml',
                                                     '--output-show-line-numbers', '--no-security-check', '--style',
                                                     'xml',
                                                     '--ignore',
@@ -234,7 +235,7 @@ if __name__ == "__main__":
                 print(e)
                 return {"error": "Invalid JSON"}, 400
             except Exception as e:
-                return {"error": "Internal Server Error"}, 500
+                return {"error": e}, 500
             return (parsed_json, 200)
         except Exception as e:
             return {"error": e}, 500
@@ -257,7 +258,7 @@ if __name__ == "__main__":
                 print(e)
                 return {"error": "Invalid JSON"}, 400
             except Exception as e:
-                return {"error": "Internal Server Error"}, 500
+                return {"error": e}, 500
             set_cache("gitlab", project_number, json_string)
             add_to_cached_repositories_list({"name": title, "number": project_number})
             return json_string, 200
