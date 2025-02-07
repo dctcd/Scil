@@ -5,7 +5,7 @@ import {ProjectContext, TabContext, } from "../App";
 
 process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 const instance = axios.create({
-    baseURL: 'http://localhost:5000',
+    baseURL: 'https://localhost:5000',
     timeout: 100000,
     rejectUnauthorized: false,
 });
@@ -15,7 +15,7 @@ export const updateGitlab = async (token, setName, setUsername, setImage, setGit
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/updateGitlab', {
             headers: {
-                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Origin': 'https://localhost:5000',
                 'Content-Type': 'application/json',
             },
             'token': token
@@ -52,7 +52,10 @@ export const updateGitlab = async (token, setName, setUsername, setImage, setGit
 export const getRepositories = async (setRepositories, setGitlabError) => {
     try {
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-        await instance.get('/getRepositories')
+        await instance.get('/getRepositories', {
+            headers: {
+                'Access-Control-Allow-Origin': 'https://localhost:5000'
+            }})
             .then(response => {
                 // response.data = code;
                 if (response.status === 200) {
@@ -75,7 +78,7 @@ export const updateOpenai = async (key, setOpenaiError, setOpenaiKeySetup) => {
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/updateOpenai', {
             headers: {
-                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Origin': 'https://localhost:5000',
                 'Content-Type': 'application/json',
             },
             'key': key
@@ -108,7 +111,7 @@ export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/analyse', {
             headers: {
-                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Origin': 'https://localhost:5000',
                 'Content-Type': 'application/json',
             },
             code: code
@@ -139,7 +142,7 @@ export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setPr
         process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
         await instance.post('/analyseRemoteRepository', {
             headers: {
-                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Origin': 'https://localhost:5000',
                 'Content-Type': 'application/json',
             },
             url: url,
@@ -191,7 +194,10 @@ export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setPr
 
 export const getAuthenticationStatus = async (setGitlabAuthenticated, setOpenaiKeySetup, setName, setUsername, setImage) => {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-    await instance.get('/getAuthenticationStatus')
+    await instance.get('/getAuthenticationStatus', {
+            headers: {
+                'Access-Control-Allow-Origin': 'https://localhost:5000'
+            }})
         .then(response => {
             if (response.status === 200) {
                 setGitlabAuthenticated(response.data.gitlabAuthenticated);
@@ -208,7 +214,10 @@ export const getAuthenticationStatus = async (setGitlabAuthenticated, setOpenaiK
 
 export const getCachedRepositories = async (setAvailableProjects, setProject, setTab) => {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
-    await instance.get('/getCachedRepositories')
+    await instance.get('/getCachedRepositories', {
+            headers: {
+                'Access-Control-Allow-Origin': 'https://localhost:5000',
+            }})
         .then(response => {
             if (response.status === 200) {
 

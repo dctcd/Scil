@@ -29,9 +29,9 @@ const Commits = ({commits, files}) => {
     <Typography variant="title" style={{marginLeft: "2px"}}>{file.filepath[0].includes("/") ?
                         file.filepath[0].substring(file.filepath[0].lastIndexOf("/")+1) : file.filepath[0]}</Typography>
                     <Stack direction="row" style={{alignItems: "center"}}>
-                        {(isErrorsOfType("majorIssue", file.issues)) && (<Box style={{borderRadius: "5px", height: "15px", width: "15px", backgroundColor: "#F18787", color: "#FFFFFF", fontSize: "12px", fontWeight: "bold", alignContent: "center", textAlign: "center", lineHeight: "5px"}}>{countErrorsOfType("majorIssue", file.issues)}</Box>)}
-                        {(isErrorsOfType("moderateIssue", file.issues)) && (<Box style={{borderRadius: "5px", height: "15px", width: "15px", backgroundColor: "#FFDD85", color: "#000000", fontSize: "12px", fontWeight: "bold", alignContent: "center", textAlign: "center", lineHeight: "5px", marginLeft: "5px"}}>{countErrorsOfType("moderateIssue", file.issues)}</Box>)}
-                        {(isErrorsOfType("codeQualityIssue", file.issues)) && (<Box style={{borderRadius: "5px", height: "15px", width: "15px", backgroundColor: "#000000", color: "#FFFFFF", fontSize: "12px", fontWeight: "bold", alignContent: "center", textAlign: "center", lineHeight: "5px", marginLeft: "5px"}}>{countErrorsOfType("codeQualityIssue", file.issues)}</Box>)}
+                        {(isErrorsOfType("majorIssue", file.issues)) && (<Box style={{borderRadius: "5px", height: "15px", width: "15px", backgroundColor: "#F18787", color: "#FFFFFF", fontSize: "11px", fontWeight: "bold", alignContent: "center", textAlign: "center"}}>{countErrorsOfType("majorIssue", file.issues)}</Box>)}
+                        {(isErrorsOfType("moderateIssue", file.issues)) && (<Box style={{borderRadius: "5px", height: "15px", width: "15px", backgroundColor: "#FFDD85", color: "#000000", fontSize: "11px", fontWeight: "bold", alignContent: "center", textAlign: "center",  marginLeft: "5px"}}>{countErrorsOfType("moderateIssue", file.issues)}</Box>)}
+                        {(isErrorsOfType("codeQualityIssue", file.issues)) && (<Box style={{borderRadius: "5px", height: "15px", width: "15px", backgroundColor: "#000000", color: "#FFFFFF", fontSize: "11px", fontWeight: "bold", alignContent: "center", textAlign: "center", marginLeft: "5px"}}>{countErrorsOfType("codeQualityIssue", file.issues)}</Box>)}
                     </Stack>
                 </Stack>
 </Box>))}

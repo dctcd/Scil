@@ -14,8 +14,10 @@ from re import findall
 from flask import Flask, request, jsonify
 from flask_cors import CORS, cross_origin
 from flask_socketio import SocketIO
+from flask_sslify import SSLify
 from pydantic import BaseModel, Field
 from openai import OpenAI
+
 from numpy import concatenate
 
 SINGLE_FILE_PROMPT = ("Analyse the code provided by the user, giving the response in a json, identifying all major, "
@@ -214,10 +216,13 @@ if __name__ == "__main__":
     # analyse_multiple_files(openai_client, "/Users/Darragh/Scil/")
 
     app = Flask(__name__)
-    socketio = SocketIO(app, cors_allowed_origins="*")
 
-    # Enable Cross Origin to prevent errors regarding frontend origins
-    CORS(app)
+    # TEMP - BEGIN
+    # socketio = SocketIO(app, cors_allowed_origins="*")
+    # CORS(app)
+    # TEMP - END
+    socketio = SocketIO(app, cors_allowed_origins="https://localhost:3000")
+    # sslify = SSLify(app)
 
 
     @app.route('/analyse', methods=['POST'])
@@ -351,7 +356,6 @@ if __name__ == "__main__":
         except Exception:
             return {"error": "No cached repositories!"}, 500
 
-
-    app.run(port=5000)
+    app.run(port=5000, ssl_context=("../certs/localhost.pem", "../certs/localhost-key.pem"))
 
 # repomix --remote [REPO_HERE] --output out.xml --output-show-line-numbers --no-security-check --style xml --ignore **/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env
