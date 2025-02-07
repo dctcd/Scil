@@ -61,13 +61,13 @@ const Code = ({project}) => {
                              description={""}
                              code={file.code}/>)))}
                     <Hidden mdUp implementation="css">
-                        <Commits style={{float: "right"}} commits={project.commits}/>
+                        <Commits style={{float: "right"}} commits={project.commits} files={project["files"]}/>
                     </Hidden>
 
                 </Stack>
                 <Hidden mdDown implementation="css">
                     <Box sx={{width: "300px"}}>
-                        <Commits commits={project.commits}/>
+                        <Commits commits={project.commits} files={project["files"]}/>
                     </Box>
                 </Hidden>
             </Stack>

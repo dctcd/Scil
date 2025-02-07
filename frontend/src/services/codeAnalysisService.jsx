@@ -119,3 +119,22 @@ export const moveSingleAnalysisProjectToTop = (projects, project, setProjects, s
 
     setProjects([{"name" : project["name"], "project": project["project"]}].concat(projects.filter(isNotMatch)));
 }
+
+export const isErrorsOfType = (type, issues) => {
+    for (var i = 0; i < issues.length; i++) {
+        if (issues.at(i).type === type) {
+            return true
+        }
+    }
+    return false;
+}
+
+export const countErrorsOfType = (type, issues) => {
+    var count = 0;
+    for (var i = 0; i < issues.length; i++) {
+        if (issues.at(i).type === type) {
+            count++;
+        }
+    }
+    return count;
+}
