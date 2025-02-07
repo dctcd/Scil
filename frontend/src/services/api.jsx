@@ -213,7 +213,6 @@ export const getCachedRepositories = async (setAvailableProjects, setProject, se
             if (response.status === 200) {
 
                 setAvailableProjects(response.data);
-                alert(JSON.stringify(response.data))
                 if (response.data) {
                     if (response.data.length > 0) {
                         getRemoteCodebaseAnalysis("", response.data[0].number, response.data[0].name, setProject,

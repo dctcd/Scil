@@ -187,17 +187,17 @@ const Sidebar = () => {
                 {/*        <Typography variant="body1">Code</Typography>*/}
                 {/*    </Button>*/}
                 {/*</Box>*/}
-                <Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
-                    <div style={{
-                        display: "inline-block",
-                        width: "2px",
-                        background: tab === "Settings" ? "#000000" : "#00000000"
-                    }}></div>
-                    <Button startIcon={<SettingsOutlinedIcon/>} sx={sidebarButtonStyle()}
-                            disableElevation size="large" onClick={() => setTab("Settings")}>
-                        <Typography variant="body1">Settings</Typography>
-                    </Button>
-                </Box>
+                {/*<Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>*/}
+                {/*    <div style={{*/}
+                {/*        display: "inline-block",*/}
+                {/*        width: "2px",*/}
+                {/*        background: tab === "Settings" ? "#000000" : "#00000000"*/}
+                {/*    }}></div>*/}
+                {/*    <Button startIcon={<SettingsOutlinedIcon/>} sx={sidebarButtonStyle()}*/}
+                {/*            disableElevation size="large" onClick={() => setTab("Settings")}>*/}
+                {/*        <Typography variant="body1">Settings</Typography>*/}
+                {/*    </Button>*/}
+                {/*</Box>*/}
                 {(JSON.stringify(project) !== "{}") && (<Box display="flex" align-items="center" style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
                     <div style={{
                         display: "inline-block",
