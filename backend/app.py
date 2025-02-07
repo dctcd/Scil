@@ -224,42 +224,45 @@ if __name__ == "__main__":
     @app.route('/analyse', methods=['POST'])
     @cross_origin()
     def analyse():
-        data = request.json
-        code = data.get('code')
         try:
-            json_string = analyse_single_file(openai_client, code)
-            parsed_json = json.loads(json_string)
-        except json.JSONDecodeError as e:
-            print(e)
-            return {"error": "Invalid JSON"}, 400
+            data = request.json
+            code = data.get('code')
+            try:
+                json_string = analyse_single_file(openai_client, code)
+                parsed_json = json.loads(json_string)
+            except json.JSONDecodeError as e:
+                print(e)
+                return {"error": "Invalid JSON"}, 400
+            except Exception as e:
+                return {"error": "Internal Server Error"}, 500
+            return (parsed_json, 200)
         except Exception as e:
-            return {"error": "Internal Server Error"}, 500
-
-        return (parsed_json, 200)
-
+            return {"error": e}, 500
 
     @app.route('/analyseRemoteRepository', methods=['POST'])
     @cross_origin()
     def analyse_remote_repository():
-        data = request.json
-        url = data.get('url')
-        title = data.get('title')
-        project_number = data.get('number')
         try:
-            cache = get_cache("gitlab", project_number)
-            if not cache is None:
-                cache["source"] = "Cached – " + cache["source"]
-                return cache, 200
-            json_string = analyse_remote_codebase(openai_client, url, project_number)
-        except json.JSONDecodeError as e:
-            print(e)
-            return {"error": "Invalid JSON"}, 400
+            data = request.json
+            url = data.get('url')
+            title = data.get('title')
+            project_number = data.get('number')
+            try:
+                cache = get_cache("gitlab", project_number)
+                if not cache is None:
+                    cache["source"] = "Cached – " + cache["source"]
+                    return cache, 200
+                json_string = analyse_remote_codebase(openai_client, url, project_number)
+            except json.JSONDecodeError as e:
+                print(e)
+                return {"error": "Invalid JSON"}, 400
+            except Exception as e:
+                return {"error": "Internal Server Error"}, 500
+            set_cache("gitlab", project_number, json_string)
+            add_to_cached_repositories_list({"name": title, "number": project_number})
+            return json_string, 200
         except Exception as e:
-            return {"error": "Internal Server Error"}, 500
-        set_cache("gitlab", project_number, json_string)
-        add_to_cached_repositories_list({"name": title, "number": project_number})
-        return json_string, 200
-
+            return {"error": e}, 500
 
     @app.route('/getRepositories', methods=['GET'])
     @cross_origin()
@@ -267,80 +270,92 @@ if __name__ == "__main__":
         # data = request.json
         # code = data.get('code')
         try:
-            private_token = os.environ.get("GITLAB_API_KEY")
-            if not private_token:
-                return {"error": "Unauthorised"}, 401
-            response = requests.get(
-                "https://gitlab.scss.tcd.ie/api/v4/projects"
-                f"?private_token={private_token}&per_page=100&membership=true&simple=true")
+            try:
+                private_token = os.environ.get("GITLAB_API_KEY")
+                if not private_token:
+                    return {"error": "Unauthorised"}, 401
+                response = requests.get(
+                    "https://gitlab.scss.tcd.ie/api/v4/projects"
+                    f"?private_token={private_token}&per_page=100&membership=true&simple=true")
 
-            parsed_json = json.loads(response.content)
-        except json.JSONDecodeError as e:
-            print(e)
-            return {"error": "Invalid JSON"}, 400
+                parsed_json = json.loads(response.content)
+            except json.JSONDecodeError as e:
+                print(e)
+                return {"error": "Invalid JSON"}, 400
+            except Exception as e:
+                return {"error": e}, 500
+            json_trimmed = []
+            for repository in parsed_json:
+                json_trimmed.append(
+                    {"name": repository["name"], "id": repository["id"], "url": repository["http_url_to_repo"]})
+            return json_trimmed, 200
         except Exception as e:
-            return {"error": "Internal Server Error"}, 500
-        json_trimmed = []
-        for repository in parsed_json:
-            json_trimmed.append(
-                {"name": repository["name"], "id": repository["id"], "url": repository["http_url_to_repo"]})
-        return json_trimmed, 200
+            return {"error": e}, 500
 
 
     @app.route('/updateGitlab', methods=['POST'])
     @cross_origin()
     def update_gitlab():
-        data = request.json
-        gitlab_private_token = data.get('token')
-        if not gitlab_private_token:
-            return {"error": "No token provided"}, 400
         try:
-            response = requests.get(
-                "https://gitlab.scss.tcd.ie/api/v4/user"
-                f"?private_token={gitlab_private_token}")
-            if response.status_code != 200:
-                return {"error": response.text}, response.status_code
-            parsed_json = json.loads(response.content)
-        except json.JSONDecodeError as e:
-            print(e)
-            return {"error": "Invalid JSON"}, 400
-        except Exception as e:
-            return {"error": "Internal Server Error"}, 500
+            data = request.json
+            gitlab_private_token = data.get('token')
+            if not gitlab_private_token:
+                return {"error": "No token provided"}, 400
+            try:
+                response = requests.get(
+                    "https://gitlab.scss.tcd.ie/api/v4/user"
+                    f"?private_token={gitlab_private_token}")
+                if response.status_code != 200:
+                    return {"error": response.text}, response.status_code
+                parsed_json = json.loads(response.content)
+            except json.JSONDecodeError as e:
+                print(e)
+                return {"error": "Invalid JSON"}, 400
+            except Exception as e:
+                return {"error": e}, 500
 
-        dotenv.set_key(".env", "GITLAB_API_KEY", gitlab_private_token)
-        load_dotenv(".env")
-        return parsed_json, 200
+            dotenv.set_key(".env", "GITLAB_API_KEY", gitlab_private_token)
+            load_dotenv(".env")
+            return parsed_json, 200
+        except Exception as e:
+            return {"error": e}, 500
 
 
     @app.route('/updateOpenai', methods=['POST'])
     @cross_origin()
     def update_openai():
-        data = request.json
-        openai_api_key = data.get('key')
-        authenticated, reason = check_openai(openai_api_key)
-        if authenticated:
-            dotenv.set_key(".env", "OPENAI_API_KEY", openai_api_key)
-            load_dotenv(".env")
-            return {}, 200
-        return {"error": reason}, 400
+        try:
+            data = request.json
+            openai_api_key = data.get('key')
+            authenticated, reason = check_openai(openai_api_key)
+            if authenticated:
+                dotenv.set_key(".env", "OPENAI_API_KEY", openai_api_key)
+                load_dotenv(".env")
+                return {}, 200
+            return {"error": reason}, 400
+        except Exception as e:
+            return {"error": e}, 500
 
 
     # Checks if the user is authenticated for GitLab and OpenAI API
     @app.route('/getAuthenticationStatus', methods=['GET'])
     @cross_origin()
     def get_authentication_status():
-        load_dotenv(".env")
-        gitlab_authenticated = True
-        response = requests.get(
-            "https://gitlab.scss.tcd.ie/api/v4/user"
-            f"?private_token={os.environ.get("GITLAB_API_KEY")}")
-        openai_authenticated, reason = check_openai(os.environ.get("OPENAI_API_KEY"))
-        if response.status_code != 200:
-            return {"gitlabAuthenticated": False, "openaiAuthenticated": openai_authenticated}, 200
-        parsed_json = json.loads(response.content)
-        return {"gitlabAuthenticated": True, "openaiAuthenticated": openai_authenticated,
-                "avatar_url": parsed_json["avatar_url"], "name": parsed_json["name"],
-                "username": parsed_json["username"]}, 200
+        try:
+            load_dotenv(".env")
+            gitlab_authenticated = True
+            response = requests.get(
+                "https://gitlab.scss.tcd.ie/api/v4/user"
+                f"?private_token={os.environ.get("GITLAB_API_KEY")}")
+            openai_authenticated, reason = check_openai(os.environ.get("OPENAI_API_KEY"))
+            if response.status_code != 200:
+                return {"gitlabAuthenticated": False, "openaiAuthenticated": openai_authenticated}, 200
+            parsed_json = json.loads(response.content)
+            return {"gitlabAuthenticated": True, "openaiAuthenticated": openai_authenticated,
+                    "avatar_url": parsed_json["avatar_url"], "name": parsed_json["name"],
+                    "username": parsed_json["username"]}, 200
+        except Exception as e:
+            return {"error": e}, 500
 
 
     @app.route('/getCachedRepositories', methods=['GET'])
@@ -349,7 +364,7 @@ if __name__ == "__main__":
         try:
             cached_repositories = get_cached_repositories_list()
             return cached_repositories, 200
-        except Exception:
-            return {"error": "No cached repositories!"}, 500
+        except Exception as e:
+            return {"error": e}, 500
 
     app.run(port=5000, ssl_context=("../certs/localhost.pem", "../certs/localhost-key.pem"))
