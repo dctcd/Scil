@@ -1,5 +1,5 @@
 import React from 'react'
-import {Box, Button, Hidden, Modal, Stack, TextField, Typography} from "@mui/material";
+import {Box, Button, Hidden, Modal, Stack, Typography} from "@mui/material";
 import Content from "./Content";
 import Commits from "./Commits";
 import ChatIcon from '@mui/icons-material/Chat';
@@ -92,7 +92,7 @@ const Code = ({project}) => {
                                     '&:hover': {borderColor: "#000000", backgroundColor: "#F0F0F0"}
 
                                 }} onClick={() => {
-                                    let projectWithoutCommits = project;
+                                    let projectWithoutCommits = JSON.parse(JSON.stringify(project));
                                     projectWithoutCommits.commits = [];
                                     for (var filesIndex = 0; filesIndex < projectWithoutCommits.files.length; filesIndex++) {
                                         let file = projectWithoutCommits.files[filesIndex];
