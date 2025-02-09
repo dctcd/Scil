@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import pickle
+import platform
 
 import dotenv
 import openai
@@ -79,7 +80,10 @@ def get_directory_structure(packed_codebase):
 
 
 def pack_codebase(command):
-    print(subprocess.run(command, shell=True))
+    if platform.system() == "Windows":
+        print(subprocess.run(command, shell=True))
+    else:
+        print(subprocess.run(command))
     if not os.path.isfile('out.xml'):
         raise PackException("Packed codebase file not found")
     file = open('out.xml', 'r')
@@ -88,7 +92,10 @@ def pack_codebase(command):
     if not directory_structure:
         raise PackException("No files in specified directory")
     file.close()
-    os.remove(os.getcwd() + "\\out.xml")  # Delete packed codebase
+    if platform.system() == "Windows": # Delete packed codebase
+        os.remove(os.getcwd() + "\\out.xml")
+    else:
+        os.remove("out.xml")
     return packed_codebase, directory_structure
 
 
