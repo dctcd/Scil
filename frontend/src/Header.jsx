@@ -1,5 +1,15 @@
 import React, {useContext, useState, useEffect} from 'react'
-import {Box, Button, Hidden, InputAdornment, Modal, Stack, TextField, Typography} from "@mui/material";
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Hidden,
+    InputAdornment,
+    Modal,
+    Stack,
+    TextField,
+    Typography
+} from "@mui/material";
 import SearchIcon from '@mui/icons-material/Search';
 import userImage from './resources/User.svg'
 import gitlabImage from './resources/GitLab.svg'
@@ -11,6 +21,7 @@ import {getAuthenticationStatus, updateGitlab, updateOpenai} from "./services/ap
 const Header = ({title}) => {
 
 
+    const [loginLoading, setLoginLoading] = useState(true);
     const [name, setName] = useState("");
     const [username, setUsername] = useState("");
     const [image, setImage] = useState(userImage);
@@ -24,7 +35,7 @@ const Header = ({title}) => {
     const {gitlabAuthenticated, setGitlabAuthenticated} = useContext(GitlabContext);
 
     useEffect(() => {
-        getAuthenticationStatus(setGitlabAuthenticated, setOpenaiKeySetup, setName, setUsername, setImage);
+        getAuthenticationStatus(setGitlabAuthenticated, setOpenaiKeySetup, setName, setUsername, setImage, setLoginLoading);
     }, []);
 
     return (<>
@@ -80,19 +91,32 @@ const Header = ({title}) => {
                         {
                             (!username) && (
                                 <>
+                                {(loginLoading) && (
+                                    <Stack direction="row" sx={{alignItems: "center"}}>
+                                        <CircularProgress color="inherit" size="25px" style={{margin: "8px"}}/>
+                                        <Typography variant="subtitle1" margin={0} style={{paddingRight: "10px",
+                                            paddingLeft: "5px"}}>
+                                            Signing in...
+                                        </Typography>
+                                    </Stack>
+                                )}
+                                {(!loginLoading) && (
+                                    <Stack direction="row">
                                     <img src={gitlabImage} height={35} alt="GitLab" style={{
                                         paddingRight: "5px", borderRadius: 17.5
                                     }}/>
                                     <Typography variant="subtitle1" margin={0} style={{paddingRight: "10px"}}>
-                                        Login
-                                    </Typography>
-                                </>
-                            )
-                        }
-                    </Button>
-                </Box>
-            </Stack>
-        </Hidden>
+                                Login
+                                </Typography>
+                                    </Stack>
+                            )}
+                    </>
+                    )
+                    }
+                </Button>
+            </Box>
+        </Stack>
+    </Hidden>
 
         <Modal open={userDialogOpen} aria-labelledby="parent-modal-title-1" onClose={() => {
                 setUserDialogOpen(false);

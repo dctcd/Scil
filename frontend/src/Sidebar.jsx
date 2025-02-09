@@ -107,7 +107,7 @@ const Sidebar = () => {
                             </NavDropdown.Item>
                         </>))}
                     {(availableProjects.length > 0) && <NavDropdown.Divider/>}
-                    <NavDropdown.Item href="#action/3.4" onClick={() => setAddCodeVisibility(true)}>
+                    <NavDropdown.Item onClick={() => setAddCodeVisibility(true)}>
                         <span style={{
                             display: "inline-block",
                             overflow: "hidden",
@@ -305,6 +305,15 @@ const Sidebar = () => {
                                                 <Typography variant="body1">{repository.name}</Typography>
                                             </Button>))}
                                     </Box>
+                                    {(repositories.length < 1) && (
+                                        <Stack direction="row" sx={{alignItems: "center"}}>
+                                            <CircularProgress color="inherit" size="25px" style={{margin: "8px"}}/>
+                                            <Typography variant="subtitle1" margin={0} style={{paddingRight: "10px",
+                                                paddingLeft: "5px"}}>
+                                                Getting repositories...
+                                            </Typography>
+                                        </Stack>
+                                    )}
                                     <Typography variant="caption" style={{
                                         overflowX: "wrap",
                                         wordBreak: "break-word",

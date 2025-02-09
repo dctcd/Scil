@@ -165,7 +165,7 @@ export const getRemoteCodebaseAnalysis = async (url, projectNumber, title, setPr
     }
 }
 
-export const getAuthenticationStatus = async (setGitlabAuthenticated, setOpenaiKeySetup, setName, setUsername, setImage) => {
+export const getAuthenticationStatus = async (setGitlabAuthenticated, setOpenaiKeySetup, setName, setUsername, setImage, setLoginLoading) => {
     process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
     await instance.get('/getAuthenticationStatus', {
             headers: {
@@ -181,6 +181,7 @@ export const getAuthenticationStatus = async (setGitlabAuthenticated, setOpenaiK
                 if (image) {
                     setImage(image);
                 }
+                setLoginLoading(false);
             }
         });
 }
