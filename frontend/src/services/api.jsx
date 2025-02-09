@@ -24,11 +24,11 @@ export const updateGitlab = async (token, setName, setUsername, setImage, setGit
                     if (image) {
                         setImage(image);
                     }
-                    setGitlabError("Updated GitLab private token");
+                    setGitlabError("Updated GitLab private token, please restart backend");
                     setGitlabAuthenticated(true);
                 }
                 else {
-                    setGitlabError("Invalid GitLab private token");
+                    setGitlabError("Invalid GitLab private token, please restart backend");
                 }
             })
             .catch(e => {
