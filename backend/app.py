@@ -3,7 +3,6 @@ import os
 import subprocess
 import pickle
 import platform
-from importlib.resources import files
 
 import dotenv
 import openai
@@ -18,7 +17,6 @@ from flask_cors import cross_origin
 from flask_socketio import SocketIO
 from pydantic import BaseModel, Field
 from openai import OpenAI
-
 
 SINGLE_FILE_PROMPT = ("Analyse the code provided by the user, giving the response in a json, identifying all major, "
                       "moderate and code quality issues, giving a title, description and severity for each, noting the "
@@ -93,31 +91,26 @@ def pack_codebase(command):
     if not directory_structure:
         raise PackException("No files in specified directory")
     file.close()
-    if platform.system() == "Windows": # Delete packed codebase
+    if platform.system() == "Windows":  # Delete packed codebase
         os.remove(os.getcwd() + "\\out.xml")
     else:
         os.remove("out.xml")
     return packed_codebase, directory_structure
 
-def append_code_to_response(analysis_json, packed_codebase, directory_structure):
-    # for file in json_analysis.get("files"):
-    #     filepath = file["filepath"][0].replace("/", "%2F")
-    #     session = requests.session()
-    #     code = session.get(
-    #         "https://{}/api/v4/projects/{}/repository/files/{}/raw"
-    #         "?private_token={}&per_page=100&membership=true&ref=main"
-    #         .format(os.environ.get('GITLAB_DOMAIN'),os.environ.get("GITLAB_API_KEY"),project_number, filepath, os.environ.get("GITLAB_API_KEY")), timeout=5)
-    #     file["code"] = code.text
 
+def append_code_to_response(analysis_json, packed_codebase, directory_structure):
     for file in directory_structure:
         code = findall(f"<file path=\"{file}\">\n(.*?)\n</file>", packed_codebase, DOTALL)
         for file_analysis in analysis_json["files"]:
             if file_analysis["filepath"][0] == file:
                 code_lines = code[0].splitlines()
                 for code_line_index in range(len(code_lines)):
-                    code_lines[code_line_index] = code_lines[code_line_index][code_lines[code_line_index].index(":")+2:len(code_lines[code_line_index])]
+                    code_lines[code_line_index] = code_lines[code_line_index][code_lines[code_line_index]
+                                                                              .index(":") + 2:len(
+                        code_lines[code_line_index])]
                 file_analysis["code"] = "\n".join(code_lines)
     return analysis_json
+
 
 def analyse_multiple_files(client, command):
     packed_codebase, directory_structure = pack_codebase(command)
@@ -150,18 +143,17 @@ def analyse_multiple_files(client, command):
 
 
 def analyse_local_codebase(client, path):
-    return analyse_multiple_files(client, ['npx', 'repomix', path, '--output', 'out.xml', '--output-show-line-numbers',
-                                           '--no-security-check', '--style', 'xml',
-                                           '--ignore',
-                                           '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
+    return analyse_multiple_files(client, ['npx', 'repomix', path, '--output', 'out.xml',
+                                           '--output-show-line-numbers', '--no-security-check', '--style', 'xml',
+                                           '--ignore', '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,'
+                                                       '**/*.txt,**/*.md,**/.gitignore,**/.env'])
 
 
 def analyse_remote_codebase(client, url, project_number):
     json_analysis = analyse_multiple_files(client, ['npx', 'repomix', '--remote', url, '--output', 'out.xml',
                                                     '--output-show-line-numbers', '--no-security-check', '--style',
-                                                    'xml',
-                                                    '--ignore',
-                                                    '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
+                                                    'xml', '--ignore', '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,'
+                                                                       '**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
     session = requests.session()
     commits = session.get(
         "https://{}/api/v4/projects/{}/repository/commits?private_token={}&per_page=100&ref=main"
@@ -208,7 +200,6 @@ def get_cached_repositories_list():
         return json.loads("[]")
 
 
-
 def add_to_cached_repositories_list(json_to_add):
     try:
         pickle_db = open(f'pkl/list', 'rb')
@@ -230,17 +221,9 @@ def add_to_cached_repositories_list(json_to_add):
 if __name__ == "__main__":
     load_dotenv(".env")
     openai_client = OpenAI()
-    # analyse_single_file(client, "INSERT_CODE_HERE")
-    # analyse_multiple_files(openai_client, "/Users/Darragh/Scil/")
 
     app = Flask(__name__)
-
-    # TEMP - BEGIN
-    # socketio = SocketIO(app, cors_allowed_origins="*")
-    # CORS(app)
-    # TEMP - END
     socketio = SocketIO(app, cors_allowed_origins="https://localhost:3000")
-    # sslify = SSLify(app)
 
 
     @app.route('/analyse', methods=['POST'])
@@ -260,6 +243,7 @@ if __name__ == "__main__":
             return (parsed_json, 200)
         except Exception as e:
             return {"error": e}, 500
+
 
     @app.route('/analyseRemoteRepository', methods=['POST'])
     @cross_origin()
@@ -286,11 +270,10 @@ if __name__ == "__main__":
         except Exception as e:
             return {"error": e}, 500
 
+
     @app.route('/getRepositories', methods=['GET'])
     @cross_origin()
     def get_repositories():
-        # data = request.json
-        # code = data.get('code')
         try:
             try:
                 private_token = os.environ.get("GITLAB_API_KEY")
@@ -391,5 +374,6 @@ if __name__ == "__main__":
             return cached_repositories, 200
         except Exception as e:
             return {"error": e}, 500
+
 
     app.run(port=5000, ssl_context=("../certs/localhost.pem", "../certs/localhost-key.pem"))
