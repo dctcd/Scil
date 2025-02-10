@@ -146,13 +146,13 @@ def analyse_remote_codebase(client, url, project_number):
         filepath = file["filepath"][0].replace("/", "%2F")
         session = requests.session()
         code = session.get(
-            "https://gitlab.scss.tcd.ie/api/v4/projects/{}/repository/files/{}/raw"
+            "https://{}/api/v4/projects/{}/repository/files/{}/raw"
             "?private_token={}&per_page=100&membership=true&ref=main"
-            .format(project_number, filepath, os.environ.get("GITLAB_API_KEY")), timeout=5)
+            .format(os.environ.get('GITLAB_DOMAIN'),os.environ.get("GITLAB_API_KEY"),project_number, filepath, os.environ.get("GITLAB_API_KEY")), timeout=5)
         file["code"] = code.text
     commits = session.get(
-        "https://gitlab.scss.tcd.ie/api/v4/projects/{}/repository/commits?private_token={}&per_page=100&ref=main"
-        .format(project_number, os.environ.get("GITLAB_API_KEY")), timeout=5)
+        "https://{}/api/v4/projects/{}/repository/commits?private_token={}&per_page=100&ref=main"
+        .format(os.environ.get('GITLAB_DOMAIN'), project_number, os.environ.get("GITLAB_API_KEY")), timeout=5)
     json_analysis["commits"] = json.loads(commits.content)
     return json_analysis
 
@@ -285,7 +285,7 @@ if __name__ == "__main__":
                     return {"error": "Unauthorised"}, 401
                 session = requests.Session()
                 response = session.get(
-                    "https://gitlab.scss.tcd.ie/api/v4/projects"
+                    f"https://{os.environ.get('GITLAB_DOMAIN')}/api/v4/projects"
                     f"?private_token={private_token}&per_page=100&membership=true&simple=true", timeout=5)
 
                 parsed_json = json.loads(response.content)
@@ -314,7 +314,7 @@ if __name__ == "__main__":
             try:
                 session = requests.session()
                 response = session.get(
-                    "https://gitlab.scss.tcd.ie/api/v4/user"
+                    f"https://{os.environ.get('GITLAB_DOMAIN')}/api/v4/user"
                     f"?private_token={gitlab_private_token}", timeout=5)
                 if response.status_code != 200:
                     return {"error": response.text}, response.status_code
@@ -357,7 +357,7 @@ if __name__ == "__main__":
             gitlab_authenticated = True
             session = requests.Session()
             response = session.get(
-                "https://gitlab.scss.tcd.ie/api/v4/user"
+                f"https://{os.environ.get('GITLAB_DOMAIN')}/api/v4/user"
                 f"?private_token={os.environ.get('GITLAB_API_KEY')}", timeout=5)
             openai_authenticated, reason = check_openai(os.environ.get("OPENAI_API_KEY"))
             if response.status_code != 200:
