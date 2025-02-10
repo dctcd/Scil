@@ -48,12 +48,11 @@ const Code = ({project}) => {
                                     {project.issuesSummary}
                                 </Typography>
                                 {
-                                    (project.hasOwnProperty("commits")) && (project.commits && (
                                         <Button startIcon={<ChatIcon/>} type="submit" variant="outlined"
                                                 sx={refreshButton()} disableElevation size="large" onClick={() => setFeedbackDialogVisible(true)}>
                                             <Typography variant="body1">Feedback</Typography>
                                         </Button>
-                                    ))
+
                                 }
                             </Stack>
                             <img src={scilLogo} style={{height: "150px", margin: "70px"}} alt="Scil"/>
@@ -94,17 +93,30 @@ const Code = ({project}) => {
                                 }} onClick={() => {
                                     let projectWithoutCommits = JSON.parse(JSON.stringify(project));
                                     projectWithoutCommits.commits = [];
-                                    for (var filesIndex = 0; filesIndex < projectWithoutCommits.files.length; filesIndex++) {
-                                        let file = projectWithoutCommits.files[filesIndex];
-                                        let fileCode = file.code.split("\n");
-                                        var codeInAnalysis = new Set();
-                                        for (var issueIndex = 0; issueIndex < file.issues.length; issueIndex++) {
-                                            let issue = file.issues[issueIndex];
-                                            for (var lineNoNo = 0; lineNoNo < issue.lineNumbers.length; lineNoNo++) {
-                                                codeInAnalysis.add(String(issue.lineNumbers[lineNoNo]) + " " + fileCode[issue.lineNumbers[lineNoNo]-1]);
+                                    if (projectWithoutCommits.hasOwnProperty("files")) {
+                                        for (var filesIndex = 0; filesIndex < projectWithoutCommits.files.length; filesIndex++) {
+                                            let file = projectWithoutCommits.files[filesIndex];
+                                            let fileCode = file.code.split("\n");
+                                            var codeInAnalysis = new Set();
+                                            for (var issueIndex = 0; issueIndex < file.issues.length; issueIndex++) {
+                                                let issue = file.issues[issueIndex];
+                                                for (var lineNoNo = 0; lineNoNo < issue.lineNumbers.length; lineNoNo++) {
+                                                    codeInAnalysis.add(String(issue.lineNumbers[lineNoNo]) + " " + fileCode[issue.lineNumbers[lineNoNo] - 1]);
+                                                }
                                             }
+                                            projectWithoutCommits.files[filesIndex].code = Array.from(codeInAnalysis).join(' ');
                                         }
-                                        projectWithoutCommits.files[filesIndex].code = Array.from(codeInAnalysis).join(' ');
+                                    }
+                                    else {
+                                        let fileCode = projectWithoutCommits.code.split("\n");
+                                        var codeInSingleAnalysis = new Set();
+                                        for (var issueSingleIndex = 0; issueSingleIndex < projectWithoutCommits.issues.length; issueSingleIndex++) {
+                                                let issue = projectWithoutCommits.issues[issueSingleIndex];
+                                                for (var singleLineNoNo = 0; singleLineNoNo < issue.lineNumbers.length; singleLineNoNo++) {
+                                                    codeInSingleAnalysis.add(String(issue.lineNumbers[singleLineNoNo]) + " " + fileCode[issue.lineNumbers[singleLineNoNo] - 1]);
+                                                }
+                                            }
+                                            projectWithoutCommits.code = Array.from(codeInSingleAnalysis).join(' ');
                                     }
                                     navigator.clipboard.writeText(JSON.stringify(projectWithoutCommits));
                                     window.open("https://forms.office.com/e/A3U9znyias", "_blank").focus();

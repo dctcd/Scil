@@ -6,7 +6,7 @@ import {countErrorsOfType, formatTimestamp, isErrorsOfType} from "./services/cod
 const Commits = ({commits, files}) => {
     return (
         <Stack>
-            <Box variant="body1" color="#000000" bgcolor="#FFF8E6" marginRight="10px" marginTop="5px" marginLeft="7px" paddingTop="5px" paddingBottom="5px"
+            {(files) && (<Box variant="body1" color="#000000" bgcolor="#FFF8E6" marginRight="10px" marginTop="5px" marginLeft="7px" paddingTop="5px" paddingBottom="5px"
              sx={{borderRadius: 4, marginBottom: "10px"}}>
                 <Stack>
                     {files.map((file, index) => (
@@ -35,7 +35,7 @@ const Commits = ({commits, files}) => {
                 </Stack>
 </Box>))}
                     </Stack>
-        </Box>
+        </Box>)}
 
         <Box variant="body1" color="#000000" bgcolor="#FFF8E6" marginRight="10px" marginTop="5px" marginLeft="7px"
              sx={{borderRadius: 4, marginBottom: 2,
