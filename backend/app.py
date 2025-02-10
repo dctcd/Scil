@@ -358,7 +358,7 @@ if __name__ == "__main__":
             session = requests.Session()
             response = session.get(
                 "https://gitlab.scss.tcd.ie/api/v4/user"
-                f"?private_token={os.environ.get("GITLAB_API_KEY")}", timeout=5)
+                f"?private_token={os.environ.get('GITLAB_API_KEY')}", timeout=5)
             openai_authenticated, reason = check_openai(os.environ.get("OPENAI_API_KEY"))
             if response.status_code != 200:
                 return {"gitlabAuthenticated": False, "openaiAuthenticated": openai_authenticated}, 200
