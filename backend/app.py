@@ -3,6 +3,7 @@ import os
 import subprocess
 import pickle
 import platform
+from importlib.resources import files
 
 import dotenv
 import openai
@@ -10,7 +11,7 @@ import requests
 from enum import Enum
 
 from dotenv import load_dotenv
-from re import findall
+from re import findall, DOTALL
 
 from flask import Flask, request
 from flask_cors import cross_origin
@@ -98,6 +99,25 @@ def pack_codebase(command):
         os.remove("out.xml")
     return packed_codebase, directory_structure
 
+def append_code_to_response(analysis_json, packed_codebase, directory_structure):
+    # for file in json_analysis.get("files"):
+    #     filepath = file["filepath"][0].replace("/", "%2F")
+    #     session = requests.session()
+    #     code = session.get(
+    #         "https://{}/api/v4/projects/{}/repository/files/{}/raw"
+    #         "?private_token={}&per_page=100&membership=true&ref=main"
+    #         .format(os.environ.get('GITLAB_DOMAIN'),os.environ.get("GITLAB_API_KEY"),project_number, filepath, os.environ.get("GITLAB_API_KEY")), timeout=5)
+    #     file["code"] = code.text
+
+    for file in directory_structure:
+        code = findall(f"<file path=\"{file}\">\n(.*?)\n</file>", packed_codebase, DOTALL)
+        for file_analysis in analysis_json["files"]:
+            if file_analysis["filepath"][0] == file:
+                code_lines = code[0].splitlines()
+                for code_line_index in range(len(code_lines)):
+                    code_lines[code_line_index] = code_lines[code_line_index][code_lines[code_line_index].index(":")+2:len(code_lines[code_line_index])]
+                file_analysis["code"] = "\n".join(code_lines)
+    return analysis_json
 
 def analyse_multiple_files(client, command):
     packed_codebase, directory_structure = pack_codebase(command)
@@ -121,12 +141,12 @@ def analyse_multiple_files(client, command):
         code_analysis = analyse_code(client, "gpt-4o", CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis)
         analysis_json = json.loads(code_analysis)
         analysis_json["source"] = "GPT 4o"
-        return analysis_json
+        return append_code_to_response(analysis_json, packed_codebase, directory_structure)
     except openai.RateLimitError:
         code_analysis = analyse_code(client, "gpt-4o-mini", CODEBASE_PROMPT, packed_codebase, CodebaseAnalysis)
         analysis_json = json.loads(code_analysis)
         analysis_json["source"] = "GPT 4o mini"
-        return analysis_json
+        return append_code_to_response(analysis_json, packed_codebase, directory_structure)
 
 
 def analyse_local_codebase(client, path):
@@ -142,14 +162,7 @@ def analyse_remote_codebase(client, url, project_number):
                                                     'xml',
                                                     '--ignore',
                                                     '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
-    for file in json_analysis.get("files"):
-        filepath = file["filepath"][0].replace("/", "%2F")
-        session = requests.session()
-        code = session.get(
-            "https://{}/api/v4/projects/{}/repository/files/{}/raw"
-            "?private_token={}&per_page=100&membership=true&ref=main"
-            .format(os.environ.get('GITLAB_DOMAIN'),os.environ.get("GITLAB_API_KEY"),project_number, filepath, os.environ.get("GITLAB_API_KEY")), timeout=5)
-        file["code"] = code.text
+    session = requests.session()
     commits = session.get(
         "https://{}/api/v4/projects/{}/repository/commits?private_token={}&per_page=100&ref=main"
         .format(os.environ.get('GITLAB_DOMAIN'), project_number, os.environ.get("GITLAB_API_KEY")), timeout=5)
