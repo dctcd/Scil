@@ -63,7 +63,7 @@ const Commits = ({commits, files}) => {
                                  style={{marginRight: "10px"}}/>
                             <Box key={"commit " + index + " typography button"}
                                  sx={{display: "flex", flexDirection: "column"}}>
-                                <Typography variant="caption">{formatTimestamp(commit.authored_date)}</Typography>
+                                <Typography variant="caption">{commit.authored_date === "Now" ? (new Date().toTimeString().substring(0,5)) : (formatTimestamp(commit.authored_date))}</Typography>
                                 {/*<Typography variant="caption">{commit.authored_date}</Typography>*/}
                                 <Typography >{commit.author_name}</Typography>
                             </Box>
@@ -86,7 +86,7 @@ const Commits = ({commits, files}) => {
                             <img src={userImage} height={35} alt="User"
                                  style={{marginRight: "10px"}}/>
                             <Box sx={{display: "flex", flexDirection: "column"}}>
-                                <Typography variant="caption">{new Date().toTimeString().substring(0,5)}</Typography>
+                                <Typography variant="caption">{}</Typography>
                                 {/*<Typography variant="caption">{commit.authored_date}</Typography>*/}
                                 <Typography>You</Typography>
                             </Box>
@@ -94,7 +94,7 @@ const Commits = ({commits, files}) => {
                         <Box
                              sx={{display: "flex", flexDirection: "row", alignItems: "center"}}>
                             {/*<WarningAmberOutlinedIcon key={"commit " + index + " warn"} style={{height: "15px"}}/>*/}
-                            <Typography>Uploaded code via web editor </Typography>
+                            <Typography> </Typography>
                         </Box>
             </Box>)}
         </Box>

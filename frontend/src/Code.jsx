@@ -127,8 +127,10 @@ const Code = ({project}) => {
                         </Box>
                         </Modal>
 
-
                     </Box>
+                    <Hidden mdUp implementation="css">
+                        <Commits style={{float: "right"}} files={project["files"]} commits={[]}/>
+                    </Hidden>
                     {
                         (isSingleFile(project)) && (
                             <Content inputErrors={project.issues} description={project.issuesSummary} title={[
@@ -144,12 +146,12 @@ const Code = ({project}) => {
                         )))
                     }
                     <Hidden mdUp implementation="css">
-                        <Commits style={{float: "right"}} commits={project.commits} files={project["files"]}/>
+                        <Commits style={{float: "right"}} commits={project.commits ? project.commits : [{authored_date: "Now", message: "Uploaded code via web editor", author_name: "You"}]}/>
                     </Hidden>
                 </Stack>
                 <Hidden mdDown implementation="css">
                     <Box sx={{width: "300px"}}>
-                        <Commits commits={project.commits} files={project["files"]}/>
+                        <Commits files={project["files"]} commits={project.commits ? project.commits : [{authored_date: "Now", message: "Uploaded code via web editor", author_name: "You"}]}/>
                     </Box>
                 </Hidden>
             </Stack>
