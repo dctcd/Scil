@@ -134,7 +134,7 @@ const Header = ({title}) => {
                     <Stack direction="row" style={{width: "500px", maxWidth: "calc(100vw - 40px)"}}>
                         <TextField password fullWidth id="outlined-basic" label="GitLab Private Key" variant="outlined"
                             type="password" value={gitlabPrivateKey} InputProps={{style: {borderRadius: 10}}}
-                            error={gitlabError === "Updated GitLab private token" ? false : (gitlabError !== "")}
+                            error={gitlabError === "Updated GitLab private token, please restart backend" ? false : (gitlabError !== "")}
                             onChange={
                                 gitlabKeyInput => setGitlabPrivateKey(gitlabKeyInput.target.value)
                             }
@@ -154,7 +154,7 @@ const Header = ({title}) => {
                             </Typography>
                         </Button>
                     </Stack>
-                    <Typography color={gitlabError !== "Updated GitLab private token" ? "red": "black"}>
+                    <Typography color={gitlabError !== "Updated GitLab private token, please restart backend" ? "red": "black"}>
                         {gitlabError}
                     </Typography>
                     <Stack direction="row" style={{marginTop: "15px", width: "500px", maxWidth: "calc(100vw - 40px)"}}>
@@ -162,7 +162,7 @@ const Header = ({title}) => {
                                    type="password" InputProps={{style: {borderRadius: 10}}} value={openaiApiKey}
                                onChange={openaiApiKeyInput =>
                                    setOpenaiApiKey(openaiApiKeyInput.target.value)
-                               } error={openaiError === "Updated OpenAI API key" ? false : (openaiError !== "")}
+                               } error={openaiError === "Updated OpenAI API key, please restart backend" ? false : (openaiError !== "")}
                                />
                         <Button type="submit" variant="outlined" sx={{
                             display: 'flex',
@@ -181,7 +181,7 @@ const Header = ({title}) => {
                             <Typography variant="body1">Update</Typography>
                         </Button>
                     </Stack>
-                    <Typography color={openaiError !== "Updated OpenAI API key" ? "red": "black"}>{openaiError}</Typography>
+                    <Typography color={openaiError !== "Updated OpenAI API key, please restart backend" ? "red": "black"}>{openaiError}</Typography>
                 </Stack>
             </Box>
         </Modal>
