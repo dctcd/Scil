@@ -51,12 +51,12 @@ const Code = () => {
                                 <Typography fontSize="32px" display="inline" sx={{lineHeight: "32px",
                                     marginBottom: "15px"
                                 }}>
-                                    {project ? project[projectAnalysisVersion][Object.keys(project[projectAnalysisVersion])[0]].issuesSummaryTitle : ""}
+                                    {project ? project[0][Object.keys(project[0])[0]].issuesSummaryTitle : ""}
                                 </Typography>
                                 <Typography fontSize="16px" display="inline" sx={{lineHeight: "16px",
                                     marginBottom: "15px"
                                 }}>
-                                    {project ? project[projectAnalysisVersion][Object.keys(project[projectAnalysisVersion])[0]].issuesSummary : ""}
+                                    {project ? project[0][Object.keys(project[0])[0]].issuesSummary : ""}
                                 </Typography>
                                 {
                                         <Button type="submit" variant="outlined"

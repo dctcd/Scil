@@ -460,13 +460,13 @@ if __name__ == "__main__":
                         url = project["url"]
                         break
                 if url is None:
-                    return {"error": "Project " + project_number + " has not been analysed"}, 500
+                    return {"error": f"Project {project_number} has not been analysed"}, 500
                 commits = get_commits(project_number)
                 if not cache is None:
                     for cached_branch in cache:
                         for commit in cached_branch:
                             if commit == commits[0]["title"] + " (" + commits[0]["short_id"] + ")":
-                                return {"error": "Project " + str(project_number) + " has had no new commits since analysis"}, 500
+                                return {"error": f"Project {str(project_number)} has had no new commits since analysis"}, 500
                     json_string = analyse_updated_remote_codebase(cache, openai_client, url, project_number)
                     remove_already_analysed_commits(cache, json_string)
                     if len(json_string["commits"]) > 0:
