@@ -27,6 +27,11 @@ CODEBASE_PROMPT = ("Analyse the code in each of the files provided by the user, 
                    "line numbers where any issues are found. For each file, try to find at least 5 issues, with a "
                    "maximum of 50 for each. Do not return anything under any file where code is completely perfect and"
                    "clear of errors.")
+UPDATE_PROMPT = ("Analyse the code in each of the files provided by the user, giving the response in a json, with "
+                   "a section for each file including the filename and a list of all new major, moderate and code "
+                   "quality issues, giving a title, description and severity for each, noting the issue type and "
+                   "line numbers where any issues are found. A json list with all issues already found is below, "
+                   "please mark each of these with isResolved as true if the issue has been resolved.")
 
 
 class IssueType(str, Enum):
@@ -42,6 +47,14 @@ class Issue(BaseModel):
     severity: float = Field(description="Float between 0 and 1 indicating the severity of the code issue")
     lineNumbers: list[int] = Field(description="Give any line numbers where the issue is found")
 
+class UpdatedIssue(BaseModel):
+    title: str = Field(description="Describe the issue in less than 5 words")
+    description: str = Field(description="Describe the issue in less than 15 words")
+    type: IssueType = Field(description="Categorise the issue as a major, moderate or code quality issue")
+    severity: float = Field(description="Float between 0 and 1 indicating the severity of the code issue")
+    lineNumbers: list[int] = Field(description="Give any line numbers where the issue is found")
+    isResolved: bool = Field(description="true if the issue has been resolved according to the code provided, else "
+                                            "false")
 
 class CodeAnalysis(BaseModel):
     codeTitle: str = Field(description="Give the code a title in less than 5 words describing the content.")
@@ -141,6 +154,33 @@ def analyse_multiple_files(client, command):
         analysis_json["source"] = "GPT 4o mini"
         return append_code_to_response(analysis_json, packed_codebase, directory_structure)
 
+def analyse_updated_files(cache, client, command):
+    packed_codebase, directory_structure = pack_codebase(command)
+
+    class FileAnalysis(BaseModel):
+        filepath: list[Enum("FilePath", {item: item for item in directory_structure})] = (
+            Field(description="Filepath of the code in question"))  # ChatGPT generated `item: item for item`
+        issues: list[UpdatedIssue] = Field(description="List of code issues within the file at the given filepath")
+
+    class CodebaseAnalysis(BaseModel):
+        issuesSummaryTitle: str = Field(
+            description="Describe the status of the code considering the errors found in the "
+                        "form of a title in less than 8 words")
+        issuesSummary: str = Field(description="Give summary of the issues found in the code in 20 words or less.")
+
+        files: list[FileAnalysis]
+
+    try:
+        code_analysis = analyse_code(client, "gpt-4o", UPDATE_PROMPT + "\n```\n" + str(cache[len(cache)-1]) + "\n```", packed_codebase, CodebaseAnalysis)
+        analysis_json = json.loads(code_analysis)
+        analysis_json["source"] = "GPT 4o"
+        return append_code_to_response(analysis_json, packed_codebase, directory_structure)
+    except openai.RateLimitError:
+        code_analysis = analyse_code(client, "gpt-4o-mini", UPDATE_PROMPT + "\n```\n" + str(cache[len(cache)-1]) + "\n```", packed_codebase, CodebaseAnalysis)
+        analysis_json = json.loads(code_analysis)
+        analysis_json["source"] = "GPT 4o mini"
+        return append_code_to_response(analysis_json, packed_codebase, directory_structure)
+
 
 def analyse_local_codebase(client, path):
     return analyse_multiple_files(client, ['npx', 'repomix', path, '--output', 'out.xml',
@@ -161,6 +201,21 @@ def analyse_remote_codebase(client, url, project_number):
     json_analysis["commits"] = json.loads(commits.content)
     return json_analysis
 
+def get_commits(project_number):
+    session = requests.session()
+    commits = session.get(
+        "https://{}/api/v4/projects/{}/repository/commits?private_token={}&per_page=100&ref=main"
+        .format(os.environ.get('GITLAB_DOMAIN'), project_number, os.environ.get("GITLAB_API_KEY")), timeout=5)
+    return json.loads(commits.content)
+
+def analyse_updated_remote_codebase(cache, client, url, project_number):
+    json_analysis = analyse_updated_files(cache, client, ['npx', 'repomix', '--remote', url, '--output', 'out.xml',
+                                                    '--output-show-line-numbers', '--no-security-check', '--style',
+                                                    'xml', '--ignore', '**/*.svg,**/*.jpg,**/*.jpeg,**/*.png,**/.git,'
+                                                                       '**/*.json,**/*.txt,**/*.md,**/.gitignore,**/.env'])
+    json_analysis["commits"] = get_commits(project_number)
+    return json_analysis
+
 
 def check_openai(openai_api_key):
     if not openai_api_key:
@@ -175,6 +230,10 @@ def set_cache(source, name, json):
     pickle.dump(json, pickle_db)
     pickle_db.close()
 
+def update_cache(source, name, json):
+    pickle_db = open(f'pkl/{source}_{name}', 'wb')
+    pickle.dump(json, pickle_db)
+    pickle_db.close()
 
 def get_cache(source, name):
     try:
@@ -217,6 +276,15 @@ def add_to_cached_repositories_list(json_to_add):
         pickle.dump(empty_pickle, new_pickle_db)
         new_pickle_db.close()
 
+def remove_already_analysed_commits(old, new):
+    length = 0
+    for analysis_branch in old:
+        for analysis in analysis_branch:
+            length += len(analysis_branch[analysis]["commits"])
+
+    remove_commits = new["commits"][:-length]
+    new["commits"] = remove_commits
+
 
 if __name__ == "__main__":
     load_dotenv(".env")
@@ -240,7 +308,7 @@ if __name__ == "__main__":
                 return {"error": "Invalid JSON"}, 400
             except Exception as e:
                 return {"error": e}, 500
-            return (parsed_json, 200)
+            return [{"uploadedCode" : parsed_json}], 200
         except Exception as e:
             return {"error": e}, 500
 
@@ -256,17 +324,20 @@ if __name__ == "__main__":
             try:
                 cache = get_cache("gitlab", project_number)
                 if not cache is None:
-                    cache["source"] = "Cached – " + cache["source"]
+                    # for cached_branch in cache:
+                    #     for commit in cached_branch:
+                    #         cached_branch[commit]["commits"] = []
                     return cache, 200
                 json_string = analyse_remote_codebase(openai_client, url, project_number)
+
             except json.JSONDecodeError as e:
                 print(e)
                 return {"error": "Invalid JSON"}, 400
             except Exception as e:
                 return {"error": e}, 500
-            set_cache("gitlab", project_number, json_string)
-            add_to_cached_repositories_list({"name": title, "number": project_number})
-            return json_string, 200
+            set_cache("gitlab", project_number, [{json_string["commits"][0]["title"] + " (" + json_string["commits"][0]["short_id"] + ")": json_string}])
+            add_to_cached_repositories_list({"name": title, "number": project_number, "url": url})
+            return [{json_string["commits"][0]["title"] + " (" + json_string["commits"][0]["short_id"] + ")": json_string}], 200
         except Exception as e:
             return {"error": e}, 500
 
@@ -372,6 +443,43 @@ if __name__ == "__main__":
         try:
             cached_repositories = get_cached_repositories_list()
             return cached_repositories, 200
+        except Exception as e:
+            return {"error": e}, 500
+
+    @app.route('/analyseUpdatedBranch', methods=['POST'])
+    @cross_origin()
+    def analyse_updated_branch():
+        try:
+            data = request.json
+            project_number = data.get('number')
+            try:
+                cache = get_cache("gitlab", project_number)
+                url = None
+                for project in get_cached_repositories_list():
+                    if project["number"] == project_number:
+                        url = project["url"]
+                        break
+                if url is None:
+                    return {"error": "Project " + project_number + " has not been analysed"}, 500
+                commits = get_commits(project_number)
+                if not cache is None:
+                    for cached_branch in cache:
+                        for commit in cached_branch:
+                            if commit == commits[0]["title"] + " (" + commits[0]["short_id"] + ")":
+                                return {"error": "Project " + str(project_number) + " has had no new commits since analysis"}, 500
+                    json_string = analyse_updated_remote_codebase(cache, openai_client, url, project_number)
+                    remove_already_analysed_commits(cache, json_string)
+                    if len(json_string["commits"]) > 0:
+                        cache.append({json_string["commits"][0]["title"] + " (" + json_string["commits"][0]["short_id"] + ")": json_string})
+                    else:
+                        cache.append({"No Changes": json_string})
+                    update_cache("gitlab", project_number, cache)
+                    return cache, 200
+            except json.JSONDecodeError as e:
+                print(e)
+                return {"error": "Invalid JSON"}, 400
+            except Exception as e:
+                return {"error": e}, 500
         except Exception as e:
             return {"error": e}, 500
 

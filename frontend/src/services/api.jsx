@@ -116,12 +116,13 @@ export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab
         })
             .then(response => {
                 // response.data = code;
-                response.data.code = code;
+                response.data[0]["uploadedCode"].code = code;
+                response.data[0]["uploadedCode"].source = "Uploaded via Web UI";
                 setProject(response.data);
                 setTab("Code");
                 setAddCodeVisibility(false);
                 if (!availableProjects.includes(response.data.codeTitle)) {
-                    var addTitle = [{"name" : response.data.codeTitle, "project" : response.data}];
+                    var addTitle = [{"name" : response.data[0]["uploadedCode"].codeTitle, "project" : response.data}];
                     setAvailableProjects(addTitle.concat(availableProjects));
                 }
                 setLoadingVisible(false);
@@ -134,6 +135,33 @@ export const getAnalysis = async (code, setProject, setAddCodeVisibility, setTab
     } catch (e) {
         console.error(e);
         setLoadingVisible(false);
+    }
+}
+
+export const analyseUpdatedBranch = async (projectNumber, setProject, setLoadingVisible, setLoadingProblem) => {
+    try {
+        await instance.post('/analyseUpdatedBranch', {
+            headers: {
+                'Access-Control-Allow-Origin': 'https://localhost:5000',
+                'Content-Type': 'application/json',
+            },
+            number: projectNumber
+        })
+            .then(response => {
+                setProject(response.data);
+                setLoadingVisible(false);
+                setLoadingProblem(false);
+                return response.data;
+            })
+            .catch(e => {
+                setLoadingVisible(false);
+                setLoadingProblem(true);
+                e.response.data.hasOwnProperty("error") ? alert(e.response.data.error) : console.error(e);
+            });
+    } catch (e) {
+        console.error(e);
+        setLoadingVisible(false);
+        setLoadingProblem(true);
     }
 }
 

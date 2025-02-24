@@ -3,6 +3,7 @@ import {Box, Button, Stack, Typography, useTheme} from "@mui/material";
 import WarningAmberOutlinedIcon from "@mui/icons-material/WarningAmberOutlined";
 import ReportIcon from '@mui/icons-material/Report';
 import CodeOffIcon from '@mui/icons-material/CodeOff';
+import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import {getLineHighlight, highlightAndFormatWhitespace, lineContainsIssue} from "./services/codeAnalysisService";
 
 const Content = ({inputErrors, title, headline, description, code}) => {
@@ -33,6 +34,15 @@ const Content = ({inputErrors, title, headline, description, code}) => {
             <Box sx={{display: "flex", flexDirection: "row", alignItems: "center"}}>
                 <ReportIcon style={{height: "20px", color: "#FFFFFF", marginRight: "5px"}}/>
                 <Typography>Major</Typography>
+            </Box>
+        </Box>;
+
+    const resolvedIssue =
+        <Box variant="body1" p="5px" color="#FFFFFF" bgcolor="#90CD87"
+                 sx={{borderRadius: "10px", marginBottom:"10px", display: "flex"}}>
+            <Box sx={{display: "flex", flexDirection: "row", alignItems: "center"}}>
+                <CheckRoundedIcon style={{height: "20px", color: "#FFFFFF", marginRight: "5px"}}/>
+                <Typography>Resolved</Typography>
             </Box>
         </Box>;
 
@@ -79,6 +89,7 @@ const Content = ({inputErrors, title, headline, description, code}) => {
                                 wordBreak: "break-word"
                             }}>
                                 {
+                                    error.hasOwnProperty("isResolved") && error.isResolved ? resolvedIssue :
                                     error.type === "codeQualityIssue" ?
                                         codeQualityIssue :
                                         (error.type === "moderateIssue" ? moderateIssue : majorIssue)

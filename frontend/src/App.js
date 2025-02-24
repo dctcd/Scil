@@ -66,7 +66,7 @@ function App() {
                                     <Stack flexGrow={1} flexDirection="column">
                                         <Header title={tab}/>
                                         {(tab === "Home" || tab === "About") && <Home/>}
-                                        {tab === "Code" && <Code project={project}/>}
+                                        {tab === "Code" && <Code/>}
                                     </Stack>
                                 </Stack>
                             </div>
