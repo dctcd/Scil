@@ -43,19 +43,7 @@ const Header = ({title}) => {
             <Stack direction="row" p={1}
                    sx={{display: "flex", alignItems: "center"}}>
                 <Typography sx={{flex: 1}} p="5px" variant="h5">{title}</Typography>
-                <TextField startIcon={<SearchIcon/>} placeholder="Search" variant="outlined" sx={{flex: 1}}
-                           InputProps={{
-                               style: {
-                                   background: "#FFFFFF",
-                                   color: "#000000",
-                                   borderRadius: 20,
-                                   height: "40px",
-                                   borderColor: "white"
-                               }, startAdornment: (<InputAdornment position="start">
-                                   <SearchIcon/>
-                               </InputAdornment>)
-                           }}
-                />
+
 
 
                 <Box sx={{display: "flex", alignItems: "center", flex: 1, justifyContent: "flex-end"}}

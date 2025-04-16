@@ -152,16 +152,6 @@ const Sidebar = () => {
                             <Typography variant="body1">{"Home"}</Typography>
                         </Button>
                     </Box>)}
-                    {(JSON.stringify(project) !== "{}") && (<Box display="flex" disabled align-items="center"
-                                                                 style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
-                        <div style={{
-                            display: "inline-block", width: "2px", background: tab === "Team" ? "#000000" : "#00000000"
-                        }}></div>
-                        <Button startIcon={<GroupsOutlinedIcon/>} sx={sidebarButtonStyle()}
-                                disableElevation size="large" onClick={() => setTab("Team")}>
-                            <Typography variant="body1">Team</Typography>
-                        </Button>
-                    </Box>)}
                     {(JSON.stringify(project) !== "{}") && (<Box display="flex" align-items="center"
                                                                  style={{marginBottom: (window.innerWidth >= theme.breakpoints.values.md ? "3px" : "10px")}}>
                         <div style={{
@@ -193,14 +183,6 @@ const Sidebar = () => {
                                         setSubmitType("inbrowser");
                                     }}>
                                         <Typography variant="body1">Add Using Web Editor</Typography>
-                                    </Button>
-                                    <Button style={{marginLeft: "12px", marginRight: "12px", marginBottom: "12px"}}
-                                            startIcon={<SourceIcon/>} type="submit" variant="outlined"
-                                            sx={loginButton()}
-                                            disableElevation size="large" onClick={() => {
-                                        setSubmitType("local");
-                                    }}>
-                                        <Typography variant="body1">Select Local Repository</Typography>
                                     </Button>
                                     <Button style={{marginLeft: "12px", marginRight: "12px", marginBottom: "12px"}}
                                             type="submit" variant="outlined" sx={{

@@ -92,28 +92,41 @@ def get_directory_structure(packed_codebase):
 
 
 def pack_codebase(command):
+
+    # Run Repomix command using PowerShell on Windows, or Unix bash
+    # Process output is printed to console
     if platform.system() == "Windows":
         print(subprocess.run(command, shell=True))
     else:
         print(subprocess.run(command))
+
+    # Verify file is created, else throw error
     if not os.path.isfile('out.xml'):
         raise PackException("Packed codebase file not found")
+
+    # If file has been successfully created, read contents
     file = open('out.xml', 'r')
     packed_codebase = file.read()
+
+    # Get structure of filepaths within packed file
     directory_structure = get_directory_structure(packed_codebase)
     if not directory_structure:
         raise PackException("No files in specified directory")
     file.close()
-    if platform.system() == "Windows":  # Delete packed codebase
+
+    # Delete packed codebase
+    if platform.system() == "Windows":
         os.remove(os.getcwd() + "\\out.xml")
     else:
         os.remove("out.xml")
+
+    # Return packed file contents and directory structure
     return packed_codebase, directory_structure
 
 
 def append_code_to_response(analysis_json, packed_codebase, directory_structure):
     for file in directory_structure:
-        code = findall(f"<file path=\"{file}\">\n(.*?)\n</file>", packed_codebase, DOTALL)
+        code = findall(f"<file path=\"{file}\">\n(.*?)\n</file>", packed_codebase, DOTALL) # GPT Assisted for matching
         for file_analysis in analysis_json["files"]:
             if file_analysis["filepath"][0] == file:
                 code_lines = code[0].splitlines()
@@ -225,14 +238,14 @@ def check_openai(openai_api_key):
     return True, ""
 
 
-def set_cache(source, name, json):
+def set_cache(source, name, json_content):
     pickle_db = open(f'pkl/{source}_{name}', 'ab')
-    pickle.dump(json, pickle_db)
+    pickle.dump(json_content, pickle_db)
     pickle_db.close()
 
-def update_cache(source, name, json):
+def update_cache(source, name, json_content):
     pickle_db = open(f'pkl/{source}_{name}', 'wb')
-    pickle.dump(json, pickle_db)
+    pickle.dump(json_content, pickle_db)
     pickle_db.close()
 
 def get_cache(source, name):
@@ -240,41 +253,52 @@ def get_cache(source, name):
         pickle_db = open(f'pkl/{source}_{name}', 'rb')
     except OSError:
         return None
-    json = pickle.load(pickle_db)
+    json_content = pickle.load(pickle_db)
     pickle_db.close()
-    return json
+    return json_content
 
 
 def get_cached_repositories_list():
     try:
+        # Open the cached list
         pickle_db = open(f'pkl/list', 'rb')
         list = pickle.load(pickle_db)
         pickle_db.close()
         return json.loads(str(list).replace("'", '"'))
-    except OSError:  # if the list does not exist, pickle an empty array
-        new_pickle_db = open(f'pkl/list', 'wb')
-        empty_pickle = json.loads("[]")
-        pickle.dump(empty_pickle, new_pickle_db)
-        new_pickle_db.close()
+
+    # If the list does not exist, pickle an empty array
+    except OSError:
         return json.loads("[]")
 
 
 def add_to_cached_repositories_list(json_to_add):
     try:
+        # Open the cached list
         pickle_db = open(f'pkl/list', 'rb')
         repositories_list = pickle.load(pickle_db)
         pickle_db.close()
+
+        # Python uses ' where JSON uses ", update to maintain consistency
         json_list = json.loads(str(repositories_list).replace("'", '"'))
+
+        # Add new JSON to list
         json_list.append(json_to_add)
+
+        # Write this JSON
         updated_pickle_db = open(f'pkl/list', 'wb')
         pickle.dump(json_list, updated_pickle_db)
         updated_pickle_db.close()
-    except OSError:  # if the list does not exist, pickle an empty array
-        new_pickle_db = open(f'pkl/list', 'wb')
-        empty_pickle = json.loads("[]")
-        empty_pickle.append(json_to_add)
-        pickle.dump(empty_pickle, new_pickle_db)
-        new_pickle_db.close()
+
+    # If the list does not exist, set up an empty list
+    except OSError:
+        setup_empty_repositories_list()
+        add_to_cached_repositories_list(json_to_add)
+
+def setup_empty_repositories_list():
+    new_pickle_db = open(f'pkl/list', 'wb')
+    empty_pickle = json.loads("[]")
+    pickle.dump(empty_pickle, new_pickle_db)
+    new_pickle_db.close()
 
 def remove_already_analysed_commits(old, new):
     length = 0
@@ -299,16 +323,17 @@ if __name__ == "__main__":
     def analyse():
         try:
             data = request.json
-            code = data.get('code')
-            try:
-                json_string = analyse_single_file(openai_client, code)
-                parsed_json = json.loads(json_string)
-            except json.JSONDecodeError as e:
-                print(e)
-                return {"error": "Invalid JSON"}, 400
-            except Exception as e:
-                return {"error": e}, 500
-            return [{"uploadedCode" : parsed_json}], 200
+            code = data.get("code")
+
+            # Get analysis
+            json_string = analyse_single_file(openai_client, code)
+            parsed_json = json.loads(json_string)
+
+            # Return analysis
+            return [{"uploadedCode": parsed_json}], 200
+
+        except json.JSONDecodeError as e:
+            return {"error": f"Invalid JSON format returned by analysis, error: {e}"}, 400
         except Exception as e:
             return {"error": e}, 500
 
@@ -321,23 +346,27 @@ if __name__ == "__main__":
             url = data.get('url')
             title = data.get('title')
             project_number = data.get('number')
-            try:
-                cache = get_cache("gitlab", project_number)
-                if not cache is None:
-                    # for cached_branch in cache:
-                    #     for commit in cached_branch:
-                    #         cached_branch[commit]["commits"] = []
-                    return cache, 200
-                json_string = analyse_remote_codebase(openai_client, url, project_number)
 
-            except json.JSONDecodeError as e:
-                print(e)
-                return {"error": "Invalid JSON"}, 400
-            except Exception as e:
-                return {"error": e}, 500
-            set_cache("gitlab", project_number, [{json_string["commits"][0]["title"] + " (" + json_string["commits"][0]["short_id"] + ")": json_string}])
-            add_to_cached_repositories_list({"name": title, "number": project_number, "url": url})
-            return [{json_string["commits"][0]["title"] + " (" + json_string["commits"][0]["short_id"] + ")": json_string}], 200
+            # Return analysis from cache, if already analysed
+            cache = get_cache("gitlab", project_number)
+            if not cache is None:
+                return cache, 200
+
+            # Get analysis
+            analysis = analyse_remote_codebase(openai_client, url, project_number)
+
+            # Add to cache
+            set_cache("gitlab", project_number,
+                      [{f"{analysis["commits"][0]["title"]} ({analysis["commits"][0]["short_id"]})": analysis}])
+            add_to_cached_repositories_list(
+                {"name": title, "number": project_number, "url": url})
+
+            # Return analysis
+            return [
+                {f"{analysis["commits"][0]["title"]} ({analysis["commits"][0]["short_id"]})": analysis}], 200
+
+        except json.JSONDecodeError as e:
+            return {"error": f"Invalid JSON format returned by analysis, error: {e}"}, 400
         except Exception as e:
             return {"error": e}, 500
 
@@ -452,34 +481,41 @@ if __name__ == "__main__":
         try:
             data = request.json
             project_number = data.get('number')
-            try:
-                cache = get_cache("gitlab", project_number)
-                url = None
-                for project in get_cached_repositories_list():
-                    if project["number"] == project_number:
-                        url = project["url"]
-                        break
-                if url is None:
-                    return {"error": f"Project {project_number} has not been analysed"}, 500
-                commits = get_commits(project_number)
-                if not cache is None:
-                    for cached_branch in cache:
-                        for commit in cached_branch:
-                            if commit == commits[0]["title"] + " (" + commits[0]["short_id"] + ")":
-                                return {"error": f"Project {str(project_number)} has had no new commits since analysis"}, 500
-                    json_string = analyse_updated_remote_codebase(cache, openai_client, url, project_number)
-                    remove_already_analysed_commits(cache, json_string)
-                    if len(json_string["commits"]) > 0:
-                        cache.append({json_string["commits"][0]["title"] + " (" + json_string["commits"][0]["short_id"] + ")": json_string})
-                    else:
-                        cache.append({"No Changes": json_string})
-                    update_cache("gitlab", project_number, cache)
-                    return cache, 200
-            except json.JSONDecodeError as e:
-                print(e)
-                return {"error": "Invalid JSON"}, 400
-            except Exception as e:
-                return {"error": e}, 500
+
+            # Get cache, if none exists - return error
+            cache = get_cache("gitlab", project_number)
+            if cache is None:
+                return {"error": "This project has not been analysed yet"}, 500
+
+            # Get URL for project
+            url = None
+            for project in get_cached_repositories_list():
+                if project["number"] == project_number:
+                    url = project["url"]
+                    break
+            if url is None:
+                return {"error": f"No URL provided for {project_number}"}, 500
+
+            # Get new commits, if none - return error
+            commits = get_commits(project_number)
+            for cached_branch in cache:
+                for commit in cached_branch:
+                    if commit == f"{commits[0]["title"]} ({commits[0]["short_id"]})":
+                        return {"error": f"Project {str(project_number)} has had no new commits since analysis"}, 500
+
+            # Perform analysis
+            json_string = analyse_updated_remote_codebase(cache, openai_client, url, project_number)
+            remove_already_analysed_commits(cache, json_string)
+
+            # Append commits to cache
+            cache.append({f"{json_string["commits"][0]["title"]} ({json_string["commits"][0]["short_id"]})": json_string})
+            update_cache("gitlab", project_number, cache)
+
+            # Return updated cache as response
+            return cache, 200
+
+        except json.JSONDecodeError as e:
+            return {"error": f"Invalid JSON format returned by analysis, error: {e}"}, 400
         except Exception as e:
             return {"error": e}, 500
 
