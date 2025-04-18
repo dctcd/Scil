@@ -520,4 +520,4 @@ if __name__ == "__main__":
             return {"error": e}, 500
 
 
-    app.run(port=5001, ssl_context=("../certs/localhost.pem", "../certs/localhost-key.pem"))
+    app.run(port=5002, ssl_context=("../certs/localhost.pem", "../certs/localhost-key.pem"))
